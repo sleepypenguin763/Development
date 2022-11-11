@@ -33,19 +33,21 @@ const getFlightRouteData = async(flightsData) =>{
   const url = 'https://sleepypenguin763.github.io/FlightData/routes/AAC.json';
 
   const response = await fetch(url);
-  let queryResult = "11111"
-  await response.json().then(json => queryResult = json);
+  if (response.status == 404){
+    return null;
+  }
+  return await response.json();
   
   //const cleanData = flightsData.states.map(async(flight) => {
    // const callsign = flight[1];
     //return null;
   //});
-  return queryResult;
+  //return queryResult;
 }
 
 function App() {
   const [flights, setFlights] = useState([]);
-  const [routes, setRoutes] = useState([]);
+  const [routes, setRoutes] = useState();
   useEffect(() => {
     /*
     const getFlightsFromAPI = async() => {
@@ -60,8 +62,8 @@ function App() {
       setRoutes(resp);
     };
     getFlightRoute();
-    console.log(routes["AAC710"]["AirportCodes"]);
   }, []);
+  console.log(routes == null ? "11111" : routes["AAC710"]["AirportCodes"]);
 
  const data = flights.states;
  //https://opensky-network.org/api/tracks/all?icao24=n71lp&time=0
