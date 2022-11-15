@@ -1,8 +1,6 @@
-import axios from 'axios';
 import './App.css';
 import { useEffect, useState } from 'react';
 import jsonFlightData from "./assets/data.json";
-import { tableSortLabelClasses } from '@mui/material';
 
 const apiRequest = async(path) => {
   const BASE_URL = "https://opensky-network.org/api/";
@@ -15,15 +13,6 @@ const apiRequest = async(path) => {
     }
   })
   return response.json();
-}
-
-const getFullAirlineData = async() => {
-  const BASE_URL = 'https://sleepypenguin763.github.io/Aviation/airlines/';
-  const response = await fetch(BASE_URL);
-  if (response.status === 404){
-    return null;
-  }
-  return await response.json();
 }
 
 const saveDataAsJSON = async(flights) => {
@@ -85,7 +74,7 @@ function CurrentAirplenStatus({data}) {
       let route = null;
       if (flightData != null){
         for(var a in flightData){
-          if (a == "AirportCodes"){
+          if (a === "AirportCodes"){
             route = flightData[a];
           }
         }
@@ -100,7 +89,7 @@ function CurrentAirplenStatus({data}) {
           }
         }
       }
-      const invalidCallsign = callsign === null || callsign === undefined || callsign == "";
+      const invalidCallsign = callsign === null || callsign === undefined || callsign === "";
 
       return (<div key={index}>
         <h1>CallSign: {invalidCallsign ? "Undefined" : callsign}</h1>
@@ -119,7 +108,8 @@ function CurrentAirplenStatus({data}) {
 function App() {
   const [flights, setFlights] = useState();
   const [loadComplete, setLoadComplete] = useState(false);
-  const [test, setTest] = useState(0);
+
+  const [batchLoadingIndex, setbatchLoadingIndex] = useState(0);
   const [loadStartIndex, setLoadStartIndex] = useState(0);
   
   useEffect(() => {
@@ -132,7 +122,6 @@ function App() {
 
     const getFlightsFromJSON = jsonFlightData;
     const loadInit = async() => {
-      // const test = await getFullAirlineData();
       const tmp = getFlightsFromJSON.states.map(async(flight, index) => {
         if (index < 1000){
           const resp = await getFlightRoutes(flight[1]);
@@ -141,22 +130,6 @@ function App() {
         }
         return {...flight, callsign: null, airline: null};
       });
-      //setFlights(tmp);
-      // await Promise.all(tmp).then(out => {
-      //   setFlights(out);
-      //   const tmp2 = out.map(async(flight, index) => {
-      //     if (index >= 1000 && index < 2000){
-      //       const resp = await getFlightRoutes(flight[1]);
-      //       const airlineName = await getAirlineData(flight[1], resp);
-      //       return {...flight, callsign: resp, airline: airlineName};
-      //     }
-      //     return {...flight};
-      //   });
-      //   Promise.all(tmp2).then(out => {
-      //     setFlights(out);
-      //     setLoadComplete(true);
-      //   });
-      // });
       await Promise.all(tmp).then(out => {
         setFlights(out);
         setLoadComplete(true);
@@ -166,6 +139,9 @@ function App() {
     loadInit();
   }, []);
 
+  /*
+    Manual Batch Loading in order for Chrome to not raise "net::ERR_INSUFFICIENT_RESOURCES"
+  */
   useEffect(() => {
     const loadMoreData = async() => {
       const tmp = flights.map(async(flight, index) => {
@@ -180,17 +156,16 @@ function App() {
         setFlights(out);
         if (loadStartIndex + 1000 < flights.length){
           setLoadStartIndex(loadStartIndex + 1000);
-          setTest(test+1);
+          setbatchLoadingIndex(batchLoadingIndex+1);
         }
       });
     };
     loadMoreData();
-  }, [test]);
-  if (loadComplete == true && test === 0){
-    setTest(1);
-  }
+  }, [batchLoadingIndex, loadStartIndex]);
 
-  //console.log(airlineData["1B"]);
+  if (loadComplete === true && batchLoadingIndex === 0){
+    setbatchLoadingIndex(1);
+  }
 
   return (
     <div className="App">
