@@ -39,14 +39,14 @@ const getFlightRoutes = async(callsign) => {
   if (response.status === 404){
     //return null;
     const firstTwoChar = callsign.slice(0, 2);
-    const url2 = 'https://sleepypenguin763.github.io/Aviation-Routes/' + firstTwoChar + '-/' + callsignWithoutSpace + '/AirportCodes';
+    const url2 = 'https://sleepypenguin763.github.io/Aviation/routes/' + firstTwoChar + '-/' + callsignWithoutSpace + '/AirportCodes';
     const response2 = await fetch(url2);
     if (response2.status === 404){
       return null;
     }
-    return response2.json();
+    return await response2.json();
   }
-  return response.json();
+  return await response.json();
 }
 
 const getAirlineData = async(callsign, resp) => {
@@ -59,22 +59,21 @@ const getAirlineData = async(callsign, resp) => {
   if (response.status === 404){
     //return null;
     const firstTwoChar = callsign.slice(0, 2);
-    const url2 = 'https://sleepypenguin763.github.io/Aviation-Routes/' + firstTwoChar;
+    const url2 = 'https://sleepypenguin763.github.io/Aviation/airlines/' + firstTwoChar;
     const response2 = await fetch(url2);
     if (response2.status === 404){
       return null;
     }
     return await response2.json();
   }
-  return response.json();
+  return await response.json();
 }
 
 function CurrentAirplenStatus({data}) {
   return(
-    data.map((flight) => {
+    data.map((flight, index) => {
       const callsign = flight[1];
       const flightData = (flight["callsign"] === null) ? null : flight["callsign"];
-      console.log(typeof(flightData));
       let route = null;
       if (flightData != null){
         for(var a in flightData){
@@ -83,12 +82,26 @@ function CurrentAirplenStatus({data}) {
           }
         }
       }
-      return (<div key={flight}>
-        <h1>CallSign: {callsign}</h1>
+
+      const airlineData = (flight["airline"] === null) ? null : flight["airline"];
+      let airline = null;
+      if (airlineData != null){
+        for (var b in airlineData){
+          if (b === "Name") {
+            airline = airlineData[b];
+          }
+        }
+      }
+      const invalidCallsign = callsign === null || callsign === undefined || callsign == "";
+
+      return (<div key={index}>
+        <h1>CallSign: {invalidCallsign ? "Undefined" : callsign}</h1>
+        <p>Airline: {airline == null ? "Airline not found" : airline}</p>
+        <p>Route: {route == null ? "Route not found" : route}</p>
         <p>Velocity: {(parseFloat(flight[9]) * 3.6).toFixed(3)} km/h</p>
         <p>Geographic Altitude: {flight[13]}</p>
         <p>Longitude / Latitude: {(parseFloat(flight[5]))} / {(parseFloat(flight[6]))}</p>
-        <p>Route: {route == null ? "Can not find the route" : route}</p>
+
         <br></br>
       </div>
       );
@@ -105,20 +118,17 @@ function App() {
       setFlights(resp);
     };
     getFlightsFromAPI();*/
+
     const getFlightsFromJSON = jsonFlightData;
     const loadInit = async() => {
       const tmp = getFlightsFromJSON.states.map(async(flight, index) => {
-        if (index < 2000){
-          const resp = getFlightRoutes(flight[1]);
-          const airlineName = getAirlineData(flight[1], resp);
-
-          return Promise.all([resp, airlineName]).then(([resp1, resp2]) => {
-            return {...flight, callsign: resp1, airline: resp2};
-          });
+        if (index < 1000){
+          const resp = await getFlightRoutes(flight[1]);
+          const airlineName = await getAirlineData(flight[1], resp);
+          return {...flight, callsign: resp, airline: airlineName};
         }
         return {...flight, callsign: null, airline: null};
       });
-      setFlights(tmp);
       await Promise.all(tmp).then(out => {
         setFlights(out);
         setLoadComplete(true);
