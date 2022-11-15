@@ -32,17 +32,20 @@ const getFlightRoutes = async(callsign) => {
     return null;
   }
   const firstThreeChar = callsign.slice(0, 3);
-  const url = 'https://sleepypenguin763.github.io/Aviation-Routes/' + firstThreeChar + '/' + callsign;
+  const callsignWithoutSpace = callsign.replace(/ /g, '');
+  //https://sleepypenguin763.github.io/Aviation/routes/AAC/AAC710/Callsign/
+  const url = 'https://sleepypenguin763.github.io/Aviation/routes/' + firstThreeChar + '/' + callsignWithoutSpace + '/AirportCodes';
+  
   const response = await fetch(url);
   if (response.status == 404){
     //return null;
     const firstTwoChar = callsign.slice(0, 2);
-    const url2 = 'https://sleepypenguin763.github.io/Aviation-Routes/' + firstTwoChar + '-/' + callsign;
+    const url2 = 'https://sleepypenguin763.github.io/Aviation-Routes/' + firstTwoChar + '-/' + callsignWithoutSpace + '/AirportCodes';
     const response2 = await fetch(url2);
     if (response2.status == 404){
       return null;
     }
-    return await response2.json();
+    return response2.json();
   }
   return response.json();
 }
@@ -72,7 +75,7 @@ function CurrentAirplenStatus({data}) {
     data.map((flight) => {
       const callsign = flight[1];
       const flightData = (flight["callsign"] === null) ? null : flight["callsign"];
-      //console.log(typeof(flightData));
+      console.log(typeof(flightData));
       let route = null;
       if (flightData != null){
         for(var a in flightData){
@@ -105,14 +108,15 @@ function App() {
     getFlightsFromAPI();*/
     const getFlightsFromJSON = jsonFlightData;
     const loadInit = async() => {
-      const clone = getFlightsFromJSON.states.map(a => {return {...a}});
-      const init = clone;
-      const tmp = await init.map(async(flight, index) => {
-        if (index != 18000){
-          const resp = await getFlightRoutes(flight[1]);
-          const airlineName = await getAirlineData(flight[1], resp);
+      const tmp = getFlightsFromJSON.states.map(async(flight, index) => {
+        if (index < 2000){
+          const resp =  await getFlightRoutes(flight[1]);
+          const airlineName =  await getAirlineData(flight[1], resp);
 
-          return {...flight, callsign: resp, airline: airlineName};
+          //return {...flight, callsign: resp, airline: airlineName};
+          return Promise.all([resp, airlineName]).then(([resp1, resp2]) => {
+            return {...flight, callsign: resp1, airline: resp2};
+          });
         }
         return {...flight, callsign: null, airline: null};
       });
