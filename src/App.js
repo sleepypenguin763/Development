@@ -28,21 +28,20 @@ const saveDataAsJSON = async(flights) => {
 };
 
 const getFlightRoutes = async(callsign) => {
-  if (callsign == undefined || callsign == null) {
+  if (callsign === undefined || callsign === null) {
     return null;
   }
   const firstThreeChar = callsign.slice(0, 3);
   const callsignWithoutSpace = callsign.replace(/ /g, '');
-  //https://sleepypenguin763.github.io/Aviation/routes/AAC/AAC710/Callsign/
   const url = 'https://sleepypenguin763.github.io/Aviation/routes/' + firstThreeChar + '/' + callsignWithoutSpace + '/AirportCodes';
   
   const response = await fetch(url);
-  if (response.status == 404){
+  if (response.status === 404){
     //return null;
     const firstTwoChar = callsign.slice(0, 2);
     const url2 = 'https://sleepypenguin763.github.io/Aviation-Routes/' + firstTwoChar + '-/' + callsignWithoutSpace + '/AirportCodes';
     const response2 = await fetch(url2);
-    if (response2.status == 404){
+    if (response2.status === 404){
       return null;
     }
     return response2.json();
@@ -51,18 +50,18 @@ const getFlightRoutes = async(callsign) => {
 }
 
 const getAirlineData = async(callsign, resp) => {
-  if (callsign == undefined || callsign == null || resp === null) {
+  if (callsign === undefined || callsign === null || resp === null) {
     return null;
   }
   const firstThreeChar = callsign.slice(0, 3);
   const url = 'https://sleepypenguin763.github.io/Aviation/airlines/' + firstThreeChar;
   const response = await fetch(url);
-  if (response.status == 404){
+  if (response.status === 404){
     //return null;
     const firstTwoChar = callsign.slice(0, 2);
     const url2 = 'https://sleepypenguin763.github.io/Aviation-Routes/' + firstTwoChar;
     const response2 = await fetch(url2);
-    if (response2.status == 404){
+    if (response2.status === 404){
       return null;
     }
     return await response2.json();
@@ -110,10 +109,9 @@ function App() {
     const loadInit = async() => {
       const tmp = getFlightsFromJSON.states.map(async(flight, index) => {
         if (index < 2000){
-          const resp =  await getFlightRoutes(flight[1]);
-          const airlineName =  await getAirlineData(flight[1], resp);
+          const resp = getFlightRoutes(flight[1]);
+          const airlineName = getAirlineData(flight[1], resp);
 
-          //return {...flight, callsign: resp, airline: airlineName};
           return Promise.all([resp, airlineName]).then(([resp1, resp2]) => {
             return {...flight, callsign: resp1, airline: resp2};
           });
@@ -128,11 +126,6 @@ function App() {
     };
     loadInit();
   }, []);
-
-  //https://opensky-network.org/api/tracks/all?icao24=n71lp&time=0
-  //https://opensky-network.org/api/routes?callsign=UAL5
-  //https://opensky-network.org/api/airports?icao=KIAH
-  //https://sleepypenguin763.github.io/FlightData/routes/ADZ.json?Callsign=ADZ402
 
   return (
     <div className="App">
