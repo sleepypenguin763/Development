@@ -2,6 +2,7 @@ import axios from 'axios';
 import './App.css';
 import { useEffect, useState } from 'react';
 import jsonFlightData from "./assets/data.json";
+import { tableSortLabelClasses } from '@mui/material';
 
 const apiRequest = async(path) => {
   const BASE_URL = "https://opensky-network.org/api/";
@@ -14,6 +15,15 @@ const apiRequest = async(path) => {
     }
   })
   return response.json();
+}
+
+const getFullAirlineData = async() => {
+  const BASE_URL = 'https://sleepypenguin763.github.io/Aviation/airlines/';
+  const response = await fetch(BASE_URL);
+  if (response.status === 404){
+    return null;
+  }
+  return await response.json();
 }
 
 const saveDataAsJSON = async(flights) => {
@@ -37,7 +47,6 @@ const getFlightRoutes = async(callsign) => {
   
   const response = await fetch(url);
   if (response.status === 404){
-    //return null;
     const firstTwoChar = callsign.slice(0, 2);
     const url2 = 'https://sleepypenguin763.github.io/Aviation/routes/' + firstTwoChar + '-/' + callsignWithoutSpace + '/AirportCodes';
     const response2 = await fetch(url2);
@@ -57,7 +66,6 @@ const getAirlineData = async(callsign, resp) => {
   const url = 'https://sleepypenguin763.github.io/Aviation/airlines/' + firstThreeChar;
   const response = await fetch(url);
   if (response.status === 404){
-    //return null;
     const firstTwoChar = callsign.slice(0, 2);
     const url2 = 'https://sleepypenguin763.github.io/Aviation/airlines/' + firstTwoChar;
     const response2 = await fetch(url2);
@@ -111,6 +119,9 @@ function CurrentAirplenStatus({data}) {
 function App() {
   const [flights, setFlights] = useState();
   const [loadComplete, setLoadComplete] = useState(false);
+  const [test, setTest] = useState(0);
+  const [loadStartIndex, setLoadStartIndex] = useState(0);
+  
   useEffect(() => {
     /*
     const getFlightsFromAPI = async() => {
@@ -121,6 +132,7 @@ function App() {
 
     const getFlightsFromJSON = jsonFlightData;
     const loadInit = async() => {
+      // const test = await getFullAirlineData();
       const tmp = getFlightsFromJSON.states.map(async(flight, index) => {
         if (index < 1000){
           const resp = await getFlightRoutes(flight[1]);
@@ -129,13 +141,56 @@ function App() {
         }
         return {...flight, callsign: null, airline: null};
       });
+      //setFlights(tmp);
+      // await Promise.all(tmp).then(out => {
+      //   setFlights(out);
+      //   const tmp2 = out.map(async(flight, index) => {
+      //     if (index >= 1000 && index < 2000){
+      //       const resp = await getFlightRoutes(flight[1]);
+      //       const airlineName = await getAirlineData(flight[1], resp);
+      //       return {...flight, callsign: resp, airline: airlineName};
+      //     }
+      //     return {...flight};
+      //   });
+      //   Promise.all(tmp2).then(out => {
+      //     setFlights(out);
+      //     setLoadComplete(true);
+      //   });
+      // });
       await Promise.all(tmp).then(out => {
         setFlights(out);
         setLoadComplete(true);
+        setLoadStartIndex(1000);
       });
     };
     loadInit();
   }, []);
+
+  useEffect(() => {
+    const loadMoreData = async() => {
+      const tmp = flights.map(async(flight, index) => {
+        if (index >= loadStartIndex & index < loadStartIndex+1000) {
+          const resp = await getFlightRoutes(flight[1]);
+          const airlineName = await getAirlineData(flight[1], resp);
+          return {...flight, callsign: resp, airline: airlineName};
+        }
+        return {...flight};
+      });
+      await Promise.all(tmp).then(out => {
+        setFlights(out);
+        if (loadStartIndex + 1000 < flights.length){
+          setLoadStartIndex(loadStartIndex + 1000);
+          setTest(test+1);
+        }
+      });
+    };
+    loadMoreData();
+  }, [test]);
+  if (loadComplete == true && test === 0){
+    setTest(1);
+  }
+
+  //console.log(airlineData["1B"]);
 
   return (
     <div className="App">
