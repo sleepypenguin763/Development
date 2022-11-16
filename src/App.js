@@ -1,6 +1,6 @@
 import './App.css';
 import { useEffect, useState } from 'react';
-import jsonFlightData from "./assets/data.json";
+import jsonFlightData from "./assets/test.json";
 
 const apiRequest = async(path) => {
   const BASE_URL = "https://opensky-network.org/api/";
@@ -77,7 +77,7 @@ const getAirportData = async(resp) => {
     const firstTwoChar = airport.slice(0, 2);
     const url = 'https://sleepypenguin763.github.io/Airlines/airports/' + firstTwoChar + '/' + fullAirportCode;
     const response = await fetch(url);
-    if (response.status == 404) {
+    if (response.status === 404) {
       return null;
     }
     return await response.json();
@@ -87,9 +87,14 @@ const getAirportData = async(resp) => {
   });
 }
 
-function CurrentAirplenStatus({data}) {
+function CurrentAirplenStatus({data, filter}) {
+  let dataToRender = data;
+  if (filter.length === 1 && filter[0] === "RemoveAirlineNotFound"){
+    dataToRender = data.filter((flight) => {return flight["airline"] !== null;});
+  }
+
   return(
-    data.map((flight, index) => {
+    dataToRender.map((flight, index) => {
       const callsign = flight[1];
       const flightData = (flight["callsign"] === null) ? null : flight["callsign"];
       let route = null;
@@ -130,9 +135,9 @@ function CurrentAirplenStatus({data}) {
 
       return (<div key={index}>
         <h1>CallSign: {invalidCallsign ? "Undefined" : callsign}</h1>
-        <p>Airline: {airline == null ? "Airline not found" : airline}</p>
-        <p>Route (ICAO): {route == null ? "Route not found" : route}</p>
-        <p>Route: {airportNames == "" ? "Route not found" : airportNames}</p>
+        <p>Airline: {airline === null ? "Airline not found" : airline}</p>
+        <p>Route (ICAO): {route === null ? "Route not found" : route}</p>
+        <p>Route: {airportNames === "" ? "Route not found" : airportNames}</p>
         <p>Velocity: {(parseFloat(flight[9]) * 3.6).toFixed(3)} km/h</p>
         <p>Geographic Altitude: {flight[13]}</p>
         <p>Longitude / Latitude: {(parseFloat(flight[5]))} / {(parseFloat(flight[6]))}</p>
@@ -152,6 +157,8 @@ function App() {
 
   const [loadedLiveFlights, setLoadedLiveFlights] = useState(false);
 
+  const [dataFilter, setDataFilter] = useState([]);
+
   const loadUsingJSON = true;
 
   const batchLoadingItemNum = 500;
@@ -159,7 +166,7 @@ function App() {
   useEffect(() => {
     
     const getFlightsFromAPI = async() => {
-      const resp = await apiRequest().then(out => {setFlights(out); setLoadedLiveFlights(true);});
+      await apiRequest().then(out => {setFlights(out); setLoadedLiveFlights(true);});
     };
     !loadUsingJSON && getFlightsFromAPI();
 
@@ -191,6 +198,9 @@ function App() {
   */
   useEffect(() => {
     const loadMoreData = async() => {
+      if (flights === null || flights === undefined){
+        return null;
+      }
       const tmp = flights.map(async(flight, index) => {
         if (index >= loadStartIndex & index < loadStartIndex + batchLoadingItemNum) {
           const resp = await getFlightRoutes(flight[1]);
@@ -215,10 +225,22 @@ function App() {
     setbatchLoadingIndex(1);
   }
 
+  /* 
+    Simple Data Filter that removed airline that is not found.
+  */
+  const filterData = () => {
+    if (dataFilter.length === 0){
+      setDataFilter(["RemoveAirlineNotFound"]);
+    }else {
+      setDataFilter([]);
+    }
+  }
+
   return (
     <div className="App">
       <h1>Flight Description</h1>
-      {loadComplete === false  ? <div>Please wait for the data to load</div> : <CurrentAirplenStatus data={flights}/>}
+      {loadComplete && <button onClick={() => filterData()}>Remove flights operated by unrecognized airline</button>}
+      {loadComplete === false  ? <div>Please wait for the data to load</div> : <CurrentAirplenStatus data={flights} filter={dataFilter}/>}
 
       <button onClick={() => saveDataAsJSON(flights)}> Save RealTime JSON Data </button>
     </div>
