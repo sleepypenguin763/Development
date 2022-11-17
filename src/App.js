@@ -1,7 +1,9 @@
 import "./App.css";
-import { useEffect, useState } from "react";
-import { Slider } from "@mui/material";
+import { useCallback, useEffect, useState } from "react";
+import Slider, { SliderThumb } from "@mui/material/Slider";
+import { styled } from "@mui/material/styles";
 import jsonFlightData from "./assets/data.json";
+import FlightIcon from "@mui/icons-material/Flight";
 
 const apiRequest = async (path) => {
   const BASE_URL = "https://opensky-network.org/api/";
@@ -98,9 +100,14 @@ const getAirportData = async (resp) => {
 
 function CurrentAirplenStatus({ data, filter }) {
   let dataToRender = data;
-  if (filter.length === 1 && filter[0] === "RemoveAirlineNotFound") {
-    dataToRender = data.filter((flight) => {
+  if (filter.length !== 0 && filter.showNullAirlineEntry !== null && filter.showNullAirlineEntry == false) {
+    dataToRender = dataToRender.filter((flight) => {
       return flight["airline"] !== null;
+    });
+  }
+  if (filter.length !== 0 && filter.altitude !== null && filter.altitude !== undefined){
+    dataToRender = dataToRender.filter((flight) => {
+      return (flight[13] !== null && flight[13] !== undefined && flight[13] >= filter.altitude[0] && flight[13] <= filter.altitude[1]);
     });
   }
 
@@ -161,6 +168,57 @@ function CurrentAirplenStatus({ data, filter }) {
   });
 }
 
+const CheckMarkSlider = styled(Slider)(({ theme }) => ({
+  color: "#3a8589",
+  height: 3,
+  padding: "13px 0",
+  "& .MuiSlider-thumb": {
+    height: 25,
+    width: 25,
+    backgroundColor: "#3a8589",
+    color: "#fff",
+    "& .checkmark-bar": {
+      height: 9,
+      width: 1,
+      backgroundColor: "currentColor",
+      marginLeft: 1,
+      marginRight: 1
+    }
+  },
+  "& .MuiSlider-track": {
+    color: theme.palette.mode = "#3a8589",
+    height: 5
+  },
+  "& .MuiSlider-rail": {
+    color: theme.palette.mode === "dark" ? "#3a8589" : "#d8d8d8",
+    opacity: theme.palette.mode === "dark" ? undefined : 1,
+    height: 5
+  }
+}));
+
+function CheckMarkThumbComponent(props) {
+  const { children, ...other } = props;
+  return (
+    <SliderThumb {...other}>
+      {children}
+      <FlightIcon />
+    </SliderThumb>
+  );
+};
+
+function SetupProgressBar({value}){
+  //Loading screen credit: https://codesandbox.io/s/customizedslider-material-demo-forked-299xcn?fontsize=14&hidenavigation=1&theme=dark&file=/demo.tsx:32-91
+  return (
+    <div className="w-50 mx-auto mb-5">
+      <CheckMarkSlider
+        value={value}
+        disabled
+        components={{ Thumb: CheckMarkThumbComponent }}
+      />
+    </div>
+  );
+}
+
 function App() {
   const [flights, setFlights] = useState();
   const [loadComplete, setLoadComplete] = useState(false);
@@ -170,7 +228,10 @@ function App() {
 
   const [loadedLiveFlights, setLoadedLiveFlights] = useState(false);
 
-  const [dataFilter, setDataFilter] = useState([]);
+  const [dataFilter, setDataFilter] = useState({});
+
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [dataSize, setDataSize] = useState(1);
 
   const loadUsingJSON = true;
 
@@ -186,10 +247,12 @@ function App() {
     !loadUsingJSON && getFlightsFromAPI();
 
     const getFlightsFromJSON = jsonFlightData;
+    setDataSize(getFlightsFromJSON.states.length);
     const loadInit = async () => {
       if (loadedLiveFlights === false && loadUsingJSON === false) {
         return;
       }
+
       const tmp = getFlightsFromJSON.states.map(async (flight, index) => {
         if (index < batchLoadingItemNum) {
           const resp = await getFlightRoutes(flight[1]);
@@ -203,6 +266,7 @@ function App() {
         setFlights(out);
         setLoadComplete(true);
         setLoadStartIndex(batchLoadingItemNum);
+        setLoadingProgress(batchLoadingItemNum);
       });
     };
     loadInit();
@@ -227,6 +291,7 @@ function App() {
       });
       await Promise.all(tmp).then((out) => {
         setFlights(out);
+        setLoadingProgress(Math.min(dataSize, loadingProgress + batchLoadingItemNum));
         if (loadStartIndex + batchLoadingItemNum < flights.length) {
           setLoadStartIndex(loadStartIndex + batchLoadingItemNum);
           setbatchLoadingIndex(batchLoadingIndex + 1);
@@ -243,52 +308,59 @@ function App() {
   /* 
     Simple Data Filter that removed airline that is not found.
   */
-  const filterData = () => {
-    if (dataFilter.length === 0) {
-      setDataFilter(["RemoveAirlineNotFound"]);
-    } else {
-      setDataFilter([]);
-    }
-  };
+  function GetSlider(){
+    const [enableNullAirlineEntry, setEnableNullAirlineEntry] = useState((dataFilter.showNullAirlineEntry === undefined) ? true : dataFilter.showNullAirlineEntry);
+    const [altitudeFilter, setAltitudeFilter] = useState((dataFilter.altitude === undefined) ? [0, 15000] : dataFilter.altitude);
+    const handleChange = (event, newValue) => {
+      setAltitudeFilter(newValue);
+    };
+    const filterDataByAltitude = useCallback(() => {
+      setDataFilter({...dataFilter, altitude: altitudeFilter});
+    }, [altitudeFilter]);
 
-  const [altitude, setAltitude] = useState([0, 20000]);
-  function valueText(value) {
-    return `${value} km/h`;
-  }
-  const handleChange = (event, newValue) => {
-    setAltitude(newValue);
+    const filterDataByNullEntry = useCallback(() => {
+      setDataFilter({...dataFilter, showNullAirlineEntry: !enableNullAirlineEntry});
+      setEnableNullAirlineEntry(!enableNullAirlineEntry);
+    }, [enableNullAirlineEntry]);
+  
+    function valueText(value) {
+      return `${value} km/h`;
+    }
+    return (
+      <div className="container">
+        <div className="row mb-5">
+          <div className="col-6 mx-auto">
+            <button onClick={filterDataByNullEntry}>Remove flights operated by unrecognized airline</button>
+          </div>
+        </div>
+        <div className="row justify-content-center mb-5 align-items-center">
+          <div className="col-4 text-end">Altitude:</div>
+          <div className="col-4">
+            <Slider
+              getAriaLabel={() => "Filter with Altitude"}
+              value={altitudeFilter}
+              onChange={handleChange}
+              getAriaValueText={valueText}
+              step={100}
+              min={0}
+              max={15000}
+              valueLabelDisplay={"auto"}
+            />
+          </div>
+          <div className="col-4 text-start">
+            <button className="btn btn-primary" onClick={filterDataByAltitude} >Filter With Altitude</button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
     <div className="App">
       <h1>Flight Description</h1>
-      {loadComplete && (
-        <div className="container">
-          <div className="row mb-5">
-            <div calassName="col-6">
-              <button onClick={() => filterData()}>Remove flights operated by unrecognized airline</button>
-            </div>
-          </div>
-          <div className="row justify-content-center mb-5 align-items-center">
-            <div className="col-4 text-end">Altitude:</div>
-            <div className="col-4">
-              <Slider
-                getAriaLabel={() => "Filter with Altitude"}
-                value={altitude}
-                onChange={handleChange}
-                getAriaValueText={valueText}
-                step={100}
-                min={0}
-                max={20000}
-                valueLabelDisplay={"auto"}
-              />
-            </div>
-            <div className="col-4 text-start">
-              <button className="btn btn-primary">Filter With Altitude</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {<SetupProgressBar value={100 * loadingProgress / dataSize}/>}
+
+      {loadComplete && <GetSlider/>}
       {loadComplete === false ? (
         <div>Please wait for the data to load</div>
       ) : (
