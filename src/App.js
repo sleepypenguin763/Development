@@ -100,7 +100,7 @@ const getAirportData = async (resp) => {
 
 function CurrentAirplenStatus({ data, filter }) {
   let dataToRender = data;
-  if (filter.length !== 0 && filter.showNullAirlineEntry !== null && filter.showNullAirlineEntry == false) {
+  if (filter.length !== 0 && filter.showNullAirlineEntry !== null && filter.showNullAirlineEntry === false) {
     dataToRender = dataToRender.filter((flight) => {
       return flight["airline"] !== null;
     });
