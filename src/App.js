@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import Slider from "@mui/material/Slider";
 import jsonFlightData from "./assets/data.json";
 
+//https://github.com/sexym0nk3y/airline-logos airline logo
 const filterData = (data, filter) => {
   let dataToRender = data;
   if (filter.length !== 0 && filter.showNullAirlineEntry !== null && filter.showNullAirlineEntry === false) {
@@ -33,10 +34,65 @@ const filterData = (data, filter) => {
     });
   }
   return dataToRender;
+};
+
+function distance(lat1, lat2, lon1, lon2) {
+  // code from: https://www.geeksforgeeks.org/program-distance-two-points-earth/
+
+  // The math module contains a function
+  // named toRadians which converts from
+  // degrees to radians.
+  lon1 = (lon1 * Math.PI) / 180;
+  lon2 = (lon2 * Math.PI) / 180;
+  lat1 = (lat1 * Math.PI) / 180;
+  lat2 = (lat2 * Math.PI) / 180;
+
+  // Haversine formula
+  const dlon = lon2 - lon1;
+  const dlat = lat2 - lat1;
+  const a = Math.pow(Math.sin(dlat / 2), 2) + Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dlon / 2), 2);
+
+  const c = 2 * Math.asin(Math.sqrt(a));
+
+  // Radius of earth in kilometers. Use 3956
+  // for miles
+  const r = 6371;
+
+  // calculate the result
+  return c * r;
+}
+
+function calculateRouteDistance(data){
+  const out = data.map((flight) => {
+    const airportData = flight["airportData"] === null ? null : flight["airportData"];
+    let longLatCoordinates = [];
+    if (airportData != null) {
+      for (var c in airportData) {
+        if (airportData[c] === null || airportData[c] === undefined || airportData[c] === "") {
+          longLatCoordinates.push([null, null]);
+        } else {
+          longLatCoordinates.push([airportData[c]["Latitude"], airportData[c]["Longitude"]]);
+        }
+      }
+    }
+    let routeDistance = flight["airportData"] === null ? null : 0;
+    if (longLatCoordinates.length >= 2){
+      for(var i=0; i < longLatCoordinates.length-1; i++){
+        if (longLatCoordinates[i][0] === null || longLatCoordinates[i][1] === null || longLatCoordinates[i+1][0] === null || longLatCoordinates[i+1][1] === null) {
+          routeDistance = null;
+          break;
+        }
+        routeDistance += distance(longLatCoordinates[i][0], longLatCoordinates[i+1][0], longLatCoordinates[i][1], longLatCoordinates[i+1][1]);
+      }
+    }
+    return {...flight, totalDistance: routeDistance};
+  });
+  return out;
 }
 
 function CurrentAirplenStatus({ data, filter }) {
-  const dataToRender = filterData(data, filter);
+  const calculateDistance = calculateRouteDistance(data);
+  const dataToRender = filterData(calculateDistance, filter);
 
   return dataToRender.map((flight, index) => {
     const callsign = flight[1];
@@ -77,18 +133,22 @@ function CurrentAirplenStatus({ data, filter }) {
 
     const invalidCallsign = callsign === null || callsign === undefined || callsign === "";
 
+    const routeDistance = flight["totalDistance"];
+
     return (
       <div key={index}>
         <h1>CallSign: {invalidCallsign ? "Undefined" : callsign}</h1>
-        <p>Airline: {airline === null ? "Airline not found" : airline}</p>
+        {!invalidCallsign && (<p>Airline: {airline === null ? "Airline not found" : airline}</p>)}
         <p>Route (ICAO): {route === null ? "Route not found" : route}</p>
-        <p>Route: {airportNames === "" ? "Route not found" : airportNames}</p>
+        {route !== null && (<p>Route: {airportNames === "" ? "Route not found" : airportNames}</p>)}
+        {route !== null && (<p>Total Route Distance: {routeDistance === null ? "Distance not available" : (routeDistance.toFixed(2) + " km")}</p>)}
+        <hr className={"w-25 mx-auto"}/>
         <p>Velocity: {(parseFloat(flight[9]) * 3.6).toFixed(3)} km/h</p>
-        <p>Geographic Altitude: {flight[13]}</p>
+        <p>Geographic Altitude: {flight[13] ?? "Altitude not found"}</p>
         <p>
           Longitude / Latitude: {parseFloat(flight[5])} / {parseFloat(flight[6])}
         </p>
-
+        <hr></hr>
         <br></br>
       </div>
     );
@@ -230,6 +290,7 @@ function App() {
               min={0}
               max={1500}
               valueLabelDisplay={"auto"}
+              valueLabelFormat={speedValueText}
             />
           </div>
         </div>
@@ -245,13 +306,14 @@ function App() {
               min={0}
               max={15000}
               valueLabelDisplay={"auto"}
+              valueLabelFormat={altitudeValueText}
             />
           </div>
         </div>
         <div className="row mb-5">
           <div className="col-4 mx-auto">
             <button className="btn btn-primary" onClick={filterDataByAltitude}>
-              Filter With Altitude
+              Filter!
             </button>
           </div>
         </div>

@@ -34,7 +34,7 @@ const getFlightRoutes = async (callsign) => {
     "/AirportCodes";
 
   const response = await fetch(url);
-  if (response.status === 404) {
+  if (response.status !== 200) {
     const firstTwoChar = callsign.slice(0, 2);
     const url2 =
       "https://sleepypenguin763.github.io/Aviation/routes/" +
