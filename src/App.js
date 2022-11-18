@@ -1,11 +1,11 @@
 import "./App.css";
 import { apiRequest, saveDataAsJSON, getFlightRoutes, getAirlineData, getAirportData } from "./APIRequests.js";
-import {SetupProgressBar} from "./ProgressBar.js";
+import { SetupProgressBar } from "./ProgressBar.js";
 import { useCallback, useEffect, useState } from "react";
 import Slider from "@mui/material/Slider";
 import jsonFlightData from "./assets/data.json";
 
-function CurrentAirplenStatus({ data, filter }) {
+const filterData = (data, filter) => {
   let dataToRender = data;
   if (filter.length !== 0 && filter.showNullAirlineEntry !== null && filter.showNullAirlineEntry === false) {
     dataToRender = dataToRender.filter((flight) => {
@@ -22,6 +22,21 @@ function CurrentAirplenStatus({ data, filter }) {
       );
     });
   }
+  if (filter.length !== 0 && filter.speed !== null && filter.speed !== undefined) {
+    dataToRender = dataToRender.filter((flight) => {
+      return (
+        flight[9] !== null &&
+        flight[9] !== undefined &&
+        parseFloat(flight[9]) * 3.6 >= filter.speed[0] &&
+        parseFloat(flight[9]) * 3.6 <= filter.speed[1]
+      );
+    });
+  }
+  return dataToRender;
+}
+
+function CurrentAirplenStatus({ data, filter }) {
+  const dataToRender = filterData(data, filter);
 
   return dataToRender.map((flight, index) => {
     const callsign = flight[1];
@@ -176,32 +191,56 @@ function App() {
     const [altitudeFilter, setAltitudeFilter] = useState(
       dataFilter.altitude === undefined ? [0, 15000] : dataFilter.altitude
     );
-    const handleChange = (event, newValue) => {
+    const [speedFilter, setSpeedFilter] = useState(dataFilter.speed === undefined ? [0, 1500] : dataFilter.speed);
+
+    const handleAltitudeChange = (event, newValue) => {
       setAltitudeFilter(newValue);
     };
-    const filterDataByAltitude = useCallback(() => {
-      setDataFilter({ ...dataFilter, altitude: altitudeFilter });
-    }, [altitudeFilter]);
+    const handleSpeedChange = (event, newValue) => {
+      setSpeedFilter(newValue);
+    };
 
     const filterDataByNullEntry = useCallback(() => {
       setDataFilter({ ...dataFilter, showNullAirlineEntry: !enableNullAirlineEntry });
       setEnableNullAirlineEntry(!enableNullAirlineEntry);
     }, [enableNullAirlineEntry]);
 
-    function valueText(value) {
+    function altitudeValueText(value) {
+      return `${value} m`;
+    }
+    function speedValueText(value) {
       return `${value} km/h`;
     }
 
+    const filterDataByAltitude = useCallback(() => {
+      setDataFilter({ ...dataFilter, altitude: altitudeFilter, speed: speedFilter });
+    }, [altitudeFilter, speedFilter]);
+
     return (
       <div className="container">
+        <div className="row justify-content-center mb-5">
+          <div className="col-2">Speed:</div>
+          <div className="col-4 align-bottom">
+            <Slider
+              getAriaLabel={() => "Filter with Speed"}
+              value={speedFilter}
+              onChange={handleSpeedChange}
+              getAriaValueText={speedValueText}
+              step={10}
+              min={0}
+              max={1500}
+              valueLabelDisplay={"auto"}
+            />
+          </div>
+        </div>
         <div className="row justify-content-center mb-5">
           <div className="col-2">Altitude:</div>
           <div className="col-4 align-bottom">
             <Slider
               getAriaLabel={() => "Filter with Altitude"}
               value={altitudeFilter}
-              onChange={handleChange}
-              getAriaValueText={valueText}
+              onChange={handleAltitudeChange}
+              getAriaValueText={altitudeValueText}
               step={100}
               min={0}
               max={15000}
@@ -210,7 +249,7 @@ function App() {
           </div>
         </div>
         <div className="row mb-5">
-        <div className="col-4 mx-auto">
+          <div className="col-4 mx-auto">
             <button className="btn btn-primary" onClick={filterDataByAltitude}>
               Filter With Altitude
             </button>
@@ -228,7 +267,7 @@ function App() {
   return (
     <div className="App">
       <h1 className="mb-5">Flight Description</h1>
-      {(((100 * loadingProgress) / dataSize) < 99.5) && <SetupProgressBar value={(100 * loadingProgress) / dataSize} />}
+      {(100 * loadingProgress) / dataSize < 99.5 && <SetupProgressBar value={(100 * loadingProgress) / dataSize} />}
 
       {loadComplete && <GetSlider />}
       {loadComplete === false ? (
