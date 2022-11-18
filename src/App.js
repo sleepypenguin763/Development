@@ -1,102 +1,10 @@
 import "./App.css";
+import { apiRequest, saveDataAsJSON, getFlightRoutes, getAirlineData, getAirportData } from "./APIRequests.js";
 import { useCallback, useEffect, useState } from "react";
 import Slider, { SliderThumb } from "@mui/material/Slider";
 import { styled } from "@mui/material/styles";
 import jsonFlightData from "./assets/data.json";
 import FlightIcon from "@mui/icons-material/Flight";
-
-const apiRequest = async (path) => {
-  const BASE_URL = "https://opensky-network.org/api/";
-  const currFlightPath = path == null ? "states/all" : path;
-  const endpoint = BASE_URL + currFlightPath;
-  const response = await fetch(endpoint, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  return response.json();
-};
-
-const saveDataAsJSON = async (flights) => {
-  const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(JSON.stringify(flights))}`;
-  const link = document.createElement("a");
-  link.href = jsonString;
-  link.download = "data.json";
-
-  link.click();
-};
-
-const getFlightRoutes = async (callsign) => {
-  if (callsign === undefined || callsign === null) {
-    return null;
-  }
-  const firstThreeChar = callsign.slice(0, 3);
-  const callsignWithoutSpace = callsign.replace(/ /g, "");
-  const url =
-    "https://sleepypenguin763.github.io/Aviation/routes/" +
-    firstThreeChar +
-    "/" +
-    callsignWithoutSpace +
-    "/AirportCodes";
-
-  const response = await fetch(url);
-  if (response.status === 404) {
-    const firstTwoChar = callsign.slice(0, 2);
-    const url2 =
-      "https://sleepypenguin763.github.io/Aviation/routes/" +
-      firstTwoChar +
-      "-/" +
-      callsignWithoutSpace +
-      "/AirportCodes";
-    const response2 = await fetch(url2);
-    if (response2.status === 404) {
-      return null;
-    }
-    return await response2.json();
-  }
-  return await response.json();
-};
-
-const getAirlineData = async (callsign, resp) => {
-  if (callsign === undefined || callsign === null || resp === null) {
-    return null;
-  }
-  const firstThreeChar = callsign.slice(0, 3);
-  const url = "https://sleepypenguin763.github.io/Airlines/airlines/" + firstThreeChar;
-  const response = await fetch(url);
-  if (response.status === 404) {
-    const firstTwoChar = callsign.slice(0, 2);
-    const url2 = "https://sleepypenguin763.github.io/Airlines/airlines/" + firstTwoChar;
-    const response2 = await fetch(url2);
-    if (response2.status === 404) {
-      return null;
-    }
-    return await response2.json();
-  }
-  return await response.json();
-};
-
-const getAirportData = async (resp) => {
-  if (resp === undefined || resp === null) {
-    return null;
-  }
-  const route = resp["AirportCodes"];
-  const split = route.split("-");
-  const airportData = split.map(async (airport) => {
-    const fullAirportCode = airport.slice(0, 4);
-    const firstTwoChar = airport.slice(0, 2);
-    const url = "https://sleepypenguin763.github.io/Airlines/airports/" + firstTwoChar + "/" + fullAirportCode;
-    const response = await fetch(url);
-    if (response.status === 404) {
-      return null;
-    }
-    return await response.json();
-  });
-  return await Promise.all(airportData).then((out) => {
-    return out;
-  });
-};
 
 function CurrentAirplenStatus({ data, filter }) {
   let dataToRender = data;
@@ -105,9 +13,14 @@ function CurrentAirplenStatus({ data, filter }) {
       return flight["airline"] !== null;
     });
   }
-  if (filter.length !== 0 && filter.altitude !== null && filter.altitude !== undefined){
+  if (filter.length !== 0 && filter.altitude !== null && filter.altitude !== undefined) {
     dataToRender = dataToRender.filter((flight) => {
-      return (flight[13] !== null && flight[13] !== undefined && flight[13] >= filter.altitude[0] && flight[13] <= filter.altitude[1]);
+      return (
+        flight[13] !== null &&
+        flight[13] !== undefined &&
+        flight[13] >= filter.altitude[0] &&
+        flight[13] <= filter.altitude[1]
+      );
     });
   }
 
@@ -182,18 +95,18 @@ const CheckMarkSlider = styled(Slider)(({ theme }) => ({
       width: 1,
       backgroundColor: "currentColor",
       marginLeft: 1,
-      marginRight: 1
-    }
+      marginRight: 1,
+    },
   },
   "& .MuiSlider-track": {
-    color: theme.palette.mode = "#3a8589",
-    height: 5
+    color: (theme.palette.mode = "#3a8589"),
+    height: 5,
   },
   "& .MuiSlider-rail": {
     color: theme.palette.mode === "dark" ? "#3a8589" : "#d8d8d8",
     opacity: theme.palette.mode === "dark" ? undefined : 1,
-    height: 5
-  }
+    height: 5,
+  },
 }));
 
 function CheckMarkThumbComponent(props) {
@@ -204,17 +117,13 @@ function CheckMarkThumbComponent(props) {
       <FlightIcon />
     </SliderThumb>
   );
-};
+}
 
-function SetupProgressBar({value}){
+function SetupProgressBar({ value }) {
   //Loading screen credit: https://codesandbox.io/s/customizedslider-material-demo-forked-299xcn?fontsize=14&hidenavigation=1&theme=dark&file=/demo.tsx:32-91
   return (
     <div className="w-50 mx-auto mb-5">
-      <CheckMarkSlider
-        value={value}
-        disabled
-        components={{ Thumb: CheckMarkThumbComponent }}
-      />
+      <CheckMarkSlider value={value} disabled components={{ Thumb: CheckMarkThumbComponent }} />
     </div>
   );
 }
@@ -308,21 +217,25 @@ function App() {
   /* 
     Simple Data Filter that removed airline that is not found.
   */
-  function GetSlider(){
-    const [enableNullAirlineEntry, setEnableNullAirlineEntry] = useState((dataFilter.showNullAirlineEntry === undefined) ? true : dataFilter.showNullAirlineEntry);
-    const [altitudeFilter, setAltitudeFilter] = useState((dataFilter.altitude === undefined) ? [0, 15000] : dataFilter.altitude);
+  function GetSlider() {
+    const [enableNullAirlineEntry, setEnableNullAirlineEntry] = useState(
+      dataFilter.showNullAirlineEntry === undefined ? true : dataFilter.showNullAirlineEntry
+    );
+    const [altitudeFilter, setAltitudeFilter] = useState(
+      dataFilter.altitude === undefined ? [0, 15000] : dataFilter.altitude
+    );
     const handleChange = (event, newValue) => {
       setAltitudeFilter(newValue);
     };
     const filterDataByAltitude = useCallback(() => {
-      setDataFilter({...dataFilter, altitude: altitudeFilter});
+      setDataFilter({ ...dataFilter, altitude: altitudeFilter });
     }, [altitudeFilter]);
 
     const filterDataByNullEntry = useCallback(() => {
-      setDataFilter({...dataFilter, showNullAirlineEntry: !enableNullAirlineEntry});
+      setDataFilter({ ...dataFilter, showNullAirlineEntry: !enableNullAirlineEntry });
       setEnableNullAirlineEntry(!enableNullAirlineEntry);
     }, [enableNullAirlineEntry]);
-  
+
     function valueText(value) {
       return `${value} km/h`;
     }
@@ -348,19 +261,21 @@ function App() {
             />
           </div>
           <div className="col-4 text-start">
-            <button className="btn btn-primary" onClick={filterDataByAltitude} >Filter With Altitude</button>
+            <button className="btn btn-primary" onClick={filterDataByAltitude}>
+              Filter With Altitude
+            </button>
           </div>
         </div>
       </div>
     );
-  };
+  }
 
   return (
     <div className="App">
       <h1>Flight Description</h1>
-      {<SetupProgressBar value={100 * loadingProgress / dataSize}/>}
+      {<SetupProgressBar value={(100 * loadingProgress) / dataSize} />}
 
-      {loadComplete && <GetSlider/>}
+      {loadComplete && <GetSlider />}
       {loadComplete === false ? (
         <div>Please wait for the data to load</div>
       ) : (
