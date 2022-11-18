@@ -16,7 +16,7 @@ Each component consists of the following:
 - Airline: (shows airline name if available)
 - Route (ICAO): (shows route in ICAO format if available)
 - Route: (shows route in text format if available)
-- Total Route Distance: (shows total route distance if available in km)
+- Total Route Distance: (shows total route distance if available in km. Calculated using the longitude / latitude data of origin/destination airport)
 - Velocity: (current plane's velocity in km/h)
 - Geographic Altitude: (current altitude of the plane in meters)
 - Longitude / Latitude: (current longitude and latitude of the plane)
