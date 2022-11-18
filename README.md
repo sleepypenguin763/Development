@@ -21,6 +21,8 @@ Each component consists of the following:
 - Geographic Altitude: (current altitude of the plane in meters)
 - Longitude / Latitude: (current longitude and latitude of the plane)
 
+Now, the "Route" and "Total Route Distance" component will not appear if the Airline/Route information is not available for the given callsign.
+
 
 
 ### How Data is Passed Down Through Components
