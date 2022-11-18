@@ -319,7 +319,7 @@ function App() {
         </div>
         <div className="row mb-5">
           <div className="col-6 mx-auto">
-            <button onClick={filterDataByNullEntry}>Remove flights operated by unrecognized airline</button>
+            <button onClick={filterDataByNullEntry}>{enableNullAirlineEntry ? "Remove unrecognized flights" : "Show unrecognized flights"}</button>
           </div>
         </div>
       </div>
