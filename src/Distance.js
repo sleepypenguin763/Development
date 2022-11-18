@@ -22,7 +22,7 @@ const distance = (lat1, lat2, lon1, lon2) => {
 
   // calculate the result
   return c * r;
-}
+};
 
 const calculateRouteDistance = (data) => {
   const out = data.map((flight) => {
@@ -38,18 +38,28 @@ const calculateRouteDistance = (data) => {
       }
     }
     let routeDistance = flight["airportData"] === null ? null : 0;
-    if (longLatCoordinates.length >= 2){
-      for(var i=0; i < longLatCoordinates.length-1; i++){
-        if (longLatCoordinates[i][0] === null || longLatCoordinates[i][1] === null || longLatCoordinates[i+1][0] === null || longLatCoordinates[i+1][1] === null) {
+    if (longLatCoordinates.length >= 2) {
+      for (var i = 0; i < longLatCoordinates.length - 1; i++) {
+        if (
+          longLatCoordinates[i][0] === null ||
+          longLatCoordinates[i][1] === null ||
+          longLatCoordinates[i + 1][0] === null ||
+          longLatCoordinates[i + 1][1] === null
+        ) {
           routeDistance = null;
           break;
         }
-        routeDistance += distance(longLatCoordinates[i][0], longLatCoordinates[i+1][0], longLatCoordinates[i][1], longLatCoordinates[i+1][1]);
+        routeDistance += distance(
+          longLatCoordinates[i][0],
+          longLatCoordinates[i + 1][0],
+          longLatCoordinates[i][1],
+          longLatCoordinates[i + 1][1]
+        );
       }
     }
-    return {...flight, totalDistance: routeDistance};
+    return { ...flight, totalDistance: routeDistance };
   });
   return out;
-}
+};
 
-export {calculateRouteDistance};
+export { calculateRouteDistance };

@@ -3,7 +3,7 @@ import { apiRequest, saveDataAsJSON, getFlightRoutes, getAirlineData, getAirport
 import { SetupProgressBar } from "./ProgressBar.js";
 import { useCallback, useEffect, useState } from "react";
 import Slider from "@mui/material/Slider";
-import {calculateRouteDistance} from "./Distance.js"
+import { calculateRouteDistance } from "./Distance.js";
 import jsonFlightData from "./assets/data.json";
 
 //https://github.com/sexym0nk3y/airline-logos airline logo
@@ -85,11 +85,15 @@ function CurrentAirplenStatus({ data, filter }) {
     return (
       <div key={index}>
         <h1>CallSign: {invalidCallsign ? "Undefined" : callsign}</h1>
-        {!invalidCallsign && (<p>Airline: {airline === null ? "Airline not found" : airline}</p>)}
+        {!invalidCallsign && <p>Airline: {airline === null ? "Airline not found" : airline}</p>}
         <p>Route (ICAO): {route === null ? "Route not found" : route}</p>
-        {route !== null && (<p>Route: {airportNames === "" ? "Route not found" : airportNames}</p>)}
-        {route !== null && (<p>Total Route Distance: {routeDistance === null ? "Distance not available" : (routeDistance.toFixed(2) + " km")}</p>)}
-        <hr className={"w-25 mx-auto"}/>
+        {route !== null && <p>Route: {airportNames === "" ? "Route not found" : airportNames}</p>}
+        {route !== null && (
+          <p>
+            Total Route Distance: {routeDistance === null ? "Distance not available" : routeDistance.toFixed(2) + " km"}
+          </p>
+        )}
+        <hr className={"w-25 mx-auto"} />
         <p>Velocity: {(parseFloat(flight[9]) * 3.6).toFixed(3)} km/h</p>
         <p>Geographic Altitude: {flight[13] ?? "Altitude not found"}</p>
         <p>
@@ -100,6 +104,90 @@ function CurrentAirplenStatus({ data, filter }) {
       </div>
     );
   });
+}
+
+function FilterSliders({dataFilter, setDataFilter}){
+  const [enableNullAirlineEntry, setEnableNullAirlineEntry] = useState(
+    dataFilter.showNullAirlineEntry === undefined ? true : dataFilter.showNullAirlineEntry
+  );
+  const [altitudeFilter, setAltitudeFilter] = useState(
+    dataFilter.altitude === undefined ? [0, 15000] : dataFilter.altitude
+  );
+  const [speedFilter, setSpeedFilter] = useState(dataFilter.speed === undefined ? [0, 1500] : dataFilter.speed);
+
+  const handleAltitudeChange = (event, newValue) => {
+    setAltitudeFilter(newValue);
+  };
+  const handleSpeedChange = (event, newValue) => {
+    setSpeedFilter(newValue);
+  };
+
+  const filterDataByNullEntry = useCallback(() => {
+    setDataFilter({ ...dataFilter, showNullAirlineEntry: !enableNullAirlineEntry });
+    setEnableNullAirlineEntry(!enableNullAirlineEntry);
+  }, [enableNullAirlineEntry]);
+
+  function altitudeValueText(value) {
+    return `${value} m`;
+  }
+  function speedValueText(value) {
+    return `${value} km/h`;
+  }
+
+  const filterDataBySpeedAltitude = useCallback(() => {
+    setDataFilter({ ...dataFilter, altitude: altitudeFilter, speed: speedFilter });
+  }, [altitudeFilter, speedFilter]);
+
+  return (
+    <div className="container">
+      <div className="row justify-content-center mb-5">
+        <div className="col-2">Speed:</div>
+        <div className="col-4 align-bottom">
+          <Slider
+            getAriaLabel={() => "Filter with Speed"}
+            value={speedFilter}
+            onChange={handleSpeedChange}
+            getAriaValueText={speedValueText}
+            step={10}
+            min={0}
+            max={1500}
+            valueLabelDisplay={"auto"}
+            valueLabelFormat={speedValueText}
+          />
+        </div>
+      </div>
+      <div className="row justify-content-center mb-5">
+        <div className="col-2">Altitude:</div>
+        <div className="col-4 align-bottom">
+          <Slider
+            getAriaLabel={() => "Filter with Altitude"}
+            value={altitudeFilter}
+            onChange={handleAltitudeChange}
+            getAriaValueText={altitudeValueText}
+            step={100}
+            min={0}
+            max={15000}
+            valueLabelDisplay={"auto"}
+            valueLabelFormat={altitudeValueText}
+          />
+        </div>
+      </div>
+      <div className="row mb-5">
+        <div className="col-4 mx-auto">
+          <button className="btn btn-primary" onClick={filterDataBySpeedAltitude}>
+            Filter!
+          </button>
+        </div>
+      </div>
+      <div className="row mb-5">
+        <div className="col-6 mx-auto">
+          <button onClick={filterDataByNullEntry}>
+            {enableNullAirlineEntry ? "Remove unrecognized flights" : "Show unrecognized flights"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function App() {
@@ -188,97 +276,12 @@ function App() {
     setbatchLoadingIndex(1);
   }
 
-  /* 
-    Simple Data Filter that removed airline that is not found.
-  */
-  function GetSlider() {
-    const [enableNullAirlineEntry, setEnableNullAirlineEntry] = useState(
-      dataFilter.showNullAirlineEntry === undefined ? true : dataFilter.showNullAirlineEntry
-    );
-    const [altitudeFilter, setAltitudeFilter] = useState(
-      dataFilter.altitude === undefined ? [0, 15000] : dataFilter.altitude
-    );
-    const [speedFilter, setSpeedFilter] = useState(dataFilter.speed === undefined ? [0, 1500] : dataFilter.speed);
-
-    const handleAltitudeChange = (event, newValue) => {
-      setAltitudeFilter(newValue);
-    };
-    const handleSpeedChange = (event, newValue) => {
-      setSpeedFilter(newValue);
-    };
-
-    const filterDataByNullEntry = useCallback(() => {
-      setDataFilter({ ...dataFilter, showNullAirlineEntry: !enableNullAirlineEntry });
-      setEnableNullAirlineEntry(!enableNullAirlineEntry);
-    }, [enableNullAirlineEntry]);
-
-    function altitudeValueText(value) {
-      return `${value} m`;
-    }
-    function speedValueText(value) {
-      return `${value} km/h`;
-    }
-
-    const filterDataBySpeedAltitude = useCallback(() => {
-      setDataFilter({ ...dataFilter, altitude: altitudeFilter, speed: speedFilter });
-    }, [altitudeFilter, speedFilter]);
-
-    return (
-      <div className="container">
-        <div className="row justify-content-center mb-5">
-          <div className="col-2">Speed:</div>
-          <div className="col-4 align-bottom">
-            <Slider
-              getAriaLabel={() => "Filter with Speed"}
-              value={speedFilter}
-              onChange={handleSpeedChange}
-              getAriaValueText={speedValueText}
-              step={10}
-              min={0}
-              max={1500}
-              valueLabelDisplay={"auto"}
-              valueLabelFormat={speedValueText}
-            />
-          </div>
-        </div>
-        <div className="row justify-content-center mb-5">
-          <div className="col-2">Altitude:</div>
-          <div className="col-4 align-bottom">
-            <Slider
-              getAriaLabel={() => "Filter with Altitude"}
-              value={altitudeFilter}
-              onChange={handleAltitudeChange}
-              getAriaValueText={altitudeValueText}
-              step={100}
-              min={0}
-              max={15000}
-              valueLabelDisplay={"auto"}
-              valueLabelFormat={altitudeValueText}
-            />
-          </div>
-        </div>
-        <div className="row mb-5">
-          <div className="col-4 mx-auto">
-            <button className="btn btn-primary" onClick={filterDataBySpeedAltitude}>
-              Filter!
-            </button>
-          </div>
-        </div>
-        <div className="row mb-5">
-          <div className="col-6 mx-auto">
-            <button onClick={filterDataByNullEntry}>{enableNullAirlineEntry ? "Remove unrecognized flights" : "Show unrecognized flights"}</button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="App">
       <h1 className="mb-5">Flight Description</h1>
       {(100 * loadingProgress) / dataSize < 99.5 && <SetupProgressBar value={(100 * loadingProgress) / dataSize} />}
 
-      {loadComplete && <GetSlider />}
+      {loadComplete && <FilterSliders dataFilter={dataFilter} setDataFilter={setDataFilter} />}
       {loadComplete === false ? (
         <div>Please wait for the data to load</div>
       ) : (
