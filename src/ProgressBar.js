@@ -43,8 +43,13 @@ function CheckMarkThumbComponent(props) {
 export function SetupProgressBar({ value }) {
   //Loading screen credit: https://codesandbox.io/s/customizedslider-material-demo-forked-299xcn?fontsize=14&hidenavigation=1&theme=dark&file=/demo.tsx:32-91
   return (
-    <div className="w-50 mx-auto mb-5">
-      <CheckMarkSlider value={value} disabled components={{ Thumb: CheckMarkThumbComponent }} />
+    <div className="container">
+      <div className="row justify-content-center mb-5 mx-auto">
+        <div className="col-2">Loading... </div>
+        <div className="col-4 align-bottom">
+          <CheckMarkSlider value={value} disabled components={{ Thumb: CheckMarkThumbComponent }} />
+        </div>
+      </div>
     </div>
   );
 }

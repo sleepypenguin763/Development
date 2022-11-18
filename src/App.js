@@ -191,16 +191,12 @@ function App() {
     function valueText(value) {
       return `${value} km/h`;
     }
+
     return (
       <div className="container">
-        <div className="row mb-5">
-          <div className="col-6 mx-auto">
-            <button onClick={filterDataByNullEntry}>Remove flights operated by unrecognized airline</button>
-          </div>
-        </div>
-        <div className="row justify-content-center mb-5 align-items-center">
-          <div className="col-4 text-end">Altitude:</div>
-          <div className="col-4">
+        <div className="row justify-content-center mb-5">
+          <div className="col-2">Altitude:</div>
+          <div className="col-4 align-bottom">
             <Slider
               getAriaLabel={() => "Filter with Altitude"}
               value={altitudeFilter}
@@ -212,10 +208,17 @@ function App() {
               valueLabelDisplay={"auto"}
             />
           </div>
-          <div className="col-4 text-start">
+        </div>
+        <div className="row mb-5">
+        <div className="col-4 mx-auto">
             <button className="btn btn-primary" onClick={filterDataByAltitude}>
               Filter With Altitude
             </button>
+          </div>
+        </div>
+        <div className="row mb-5">
+          <div className="col-6 mx-auto">
+            <button onClick={filterDataByNullEntry}>Remove flights operated by unrecognized airline</button>
           </div>
         </div>
       </div>
@@ -224,7 +227,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Flight Description</h1>
+      <h1 className="mb-5">Flight Description</h1>
       {(((100 * loadingProgress) / dataSize) < 99.5) && <SetupProgressBar value={(100 * loadingProgress) / dataSize} />}
 
       {loadComplete && <GetSlider />}
