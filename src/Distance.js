@@ -24,8 +24,14 @@ const distance = (lat1, lat2, lon1, lon2) => {
   return c * r;
 };
 
-const calculateRouteDistance = (data) => {
-  const out = data.map((flight) => {
+/*
+  Called when fetching the data in APP class's useEffect
+*/
+const calculateRouteDistance = (data, min, max) => {
+  const out = data.map((flight, index) => {
+    if (index < min || index > max){
+      return {...flight};
+    }
     const airportData = flight["airportData"] === null ? null : flight["airportData"];
     let longLatCoordinates = [];
     if (airportData != null) {
@@ -60,6 +66,6 @@ const calculateRouteDistance = (data) => {
     return { ...flight, totalDistance: routeDistance };
   });
   return out;
-};
+}
 
 export { calculateRouteDistance };

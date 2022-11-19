@@ -1,3 +1,5 @@
+const twoCharRouteDirs = ["CN", "N9", "SH", "N5", "BM"]; //This is a constance, and will not be updated what so ever during the life cycle, so no need to use states.
+
 const apiRequest = async (path) => {
   const BASE_URL = "https://opensky-network.org/api/";
   const currFlightPath = path == null ? "states/all" : path;
@@ -36,6 +38,9 @@ const getFlightRoutes = async (callsign) => {
   const response = await fetch(url);
   if (response.status !== 200) {
     const firstTwoChar = callsign.slice(0, 2);
+    if ((firstTwoChar in twoCharRouteDirs) === false){
+      return null;
+    }
     const url2 =
       "https://sleepypenguin763.github.io/Aviation/routes/" +
       firstTwoChar +

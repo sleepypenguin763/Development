@@ -1,10 +1,10 @@
-import "./App.css";
-import { apiRequest, saveDataAsJSON, getFlightRoutes, getAirlineData, getAirportData } from "./APIRequests.js";
-import { SetupProgressBar } from "./ProgressBar.js";
-import { useCallback, useEffect, useState } from "react";
 import Slider from "@mui/material/Slider";
-import { calculateRouteDistance } from "./Distance.js";
+import { useCallback, useEffect, useState } from "react";
+import { apiRequest, getAirlineData, getAirportData, getFlightRoutes, saveDataAsJSON } from "./APIRequests.js";
+import "./App.css";
 import jsonFlightData from "./assets/data.json";
+import { calculateRouteDistance } from "./Distance.js";
+import { SetupProgressBar } from "./ProgressBar.js";
 
 //https://github.com/sexym0nk3y/airline-logos airline logo
 const filterData = (data, filter) => {
@@ -38,8 +38,7 @@ const filterData = (data, filter) => {
 };
 
 function CurrentAirplenStatus({ data, filter }) {
-  const calculateDistance = calculateRouteDistance(data);
-  const dataToRender = filterData(calculateDistance, filter);
+  const dataToRender = filterData(data, filter);
 
   return dataToRender.map((flight, index) => {
     const callsign = flight[1];
@@ -229,15 +228,15 @@ function App() {
           const resp = await getFlightRoutes(flight[1]);
           const airlineName = await getAirlineData(flight[1], resp);
           const airportData = await getAirportData(resp);
-          return { ...flight, callsign: resp, airline: airlineName, airportData: airportData };
+          return { ...flight, callsign: resp, airline: airlineName, airportData: airportData};
         }
         return { ...flight, callsign: null, airline: null, airportData: null };
       });
       await Promise.all(tmp).then((out) => {
-        setFlights(out);
         setLoadComplete(true);
         setLoadStartIndex(batchLoadingItemNum);
         setLoadingProgress(batchLoadingItemNum);
+        setFlights(calculateRouteDistance(out, 0, batchLoadingItemNum));
       });
     };
     loadInit();
@@ -263,6 +262,7 @@ function App() {
       await Promise.all(tmp).then((out) => {
         setFlights(out);
         setLoadingProgress(Math.min(dataSize, loadingProgress + batchLoadingItemNum));
+        setFlights(calculateRouteDistance(out, loadStartIndex, loadStartIndex+batchLoadingItemNum));
         if (loadStartIndex + batchLoadingItemNum < flights.length) {
           setLoadStartIndex(loadStartIndex + batchLoadingItemNum);
           setbatchLoadingIndex(batchLoadingIndex + 1);
