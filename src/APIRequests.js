@@ -1,4 +1,4 @@
-const twoCharRouteDirs = ["CN", "N9", "SH", "N5", "BM"]; //This is a constance, and will not be updated what so ever during the life cycle, so no need to use states.
+const twoCharRouteDirs = ["CN", "N9", "SH", "N5", "BM"]; //This is a constant, and will not be updated what so ever during the life cycle, so no need to use states.
 
 const apiRequest = async (path) => {
   const BASE_URL = "https://opensky-network.org/api/";

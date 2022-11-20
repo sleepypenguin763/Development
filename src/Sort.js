@@ -6,7 +6,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import { useCallback, useState } from "react";
 
-const sortOptions = ["Default", "Callsign", "Speed", "Route Distance"];
+const sortOptions = ["Default", "Callsign", "Speed", "Route Distance"]; //This is a constant, and will not be updated what so ever during the life cycle, so no need to use states.
 
 // Alphanumeric sort taken from: https://stackoverflow.com/questions/4340227/sort-mixed-alpha-numeric-array
 function AlphaNumericSort() {
