@@ -5,12 +5,12 @@ import jsonFlightData from "./assets/data.json";
 import { calculateRouteDistance } from "./Distance.js";
 import { filterData, FilterSliders } from "./Filter.js";
 import { SetupProgressBar } from "./ProgressBar.js";
-import { SortByMenu } from "./Sort.js";
+import { SortByMenu, sortData } from "./Sort.js";
 
 //https://github.com/sexym0nk3y/airline-logos airline logo
 
-function CurrentAirplenStatus({ data, filter }) {
-  const dataToRender = filterData(data, filter);
+function CurrentAirplenStatus({ data, filter, sortBy}) {
+  const dataToRender = sortData(filterData(data, filter), sortBy);
 
   return dataToRender.map((flight, index) => {
     const callsign = flight[1];
@@ -175,7 +175,7 @@ function App() {
       {loadComplete === false ? (
         <div>Please wait for the data to load</div>
       ) : (
-        <CurrentAirplenStatus data={flights} filter={dataFilter} />
+        <CurrentAirplenStatus data={flights} filter={dataFilter} sortBy={sortBy}/>
       )}
 
       <button onClick={() => saveDataAsJSON(flights)}> Save RealTime JSON Data </button>
