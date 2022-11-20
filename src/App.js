@@ -3,8 +3,8 @@ import { apiRequest, getAirlineData, getAirportData, getFlightRoutes, saveDataAs
 import "./App.css";
 import jsonFlightData from "./assets/data.json";
 import { calculateRouteDistance } from "./Distance.js";
+import { filterData, FilterSliders } from "./Filter.js";
 import { SetupProgressBar } from "./ProgressBar.js";
-import {filterData, FilterSliders} from "./Filter.js";
 
 //https://github.com/sexym0nk3y/airline-logos airline logo
 
@@ -85,7 +85,7 @@ function App() {
 
   const [loadedLiveFlights, setLoadedLiveFlights] = useState(false);
 
-  const [dataFilter, setDataFilter] = useState({showNullAirlineEntry: true, altitude: [0, 15000], speed: [0, 1500]});
+  const [dataFilter, setDataFilter] = useState({ showNullAirlineEntry: true, altitude: [0, 15000], speed: [0, 1500] });
 
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [dataSize, setDataSize] = useState(1);
@@ -115,7 +115,7 @@ function App() {
           const resp = await getFlightRoutes(flight[1]);
           const airlineName = await getAirlineData(flight[1], resp);
           const airportData = await getAirportData(resp);
-          return { ...flight, callsign: resp, airline: airlineName, airportData: airportData};
+          return { ...flight, callsign: resp, airline: airlineName, airportData: airportData };
         }
         return { ...flight, callsign: null, airline: null, airportData: null };
       });
@@ -149,7 +149,7 @@ function App() {
       await Promise.all(tmp).then((out) => {
         setFlights(out);
         setLoadingProgress(Math.min(dataSize, loadingProgress + batchLoadingItemNum));
-        setFlights(calculateRouteDistance(out, loadStartIndex, loadStartIndex+batchLoadingItemNum));
+        setFlights(calculateRouteDistance(out, loadStartIndex, loadStartIndex + batchLoadingItemNum));
         if (loadStartIndex + batchLoadingItemNum < flights.length) {
           setLoadStartIndex(loadStartIndex + batchLoadingItemNum);
           setbatchLoadingIndex(batchLoadingIndex + 1);

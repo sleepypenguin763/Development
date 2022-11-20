@@ -1,3 +1,5 @@
+import DeleteIcon from "@mui/icons-material/Delete";
+import Button from "@mui/material/Button";
 import Slider from "@mui/material/Slider";
 import { useCallback, useState } from "react";
 
@@ -31,7 +33,7 @@ const filterData = (data, filter) => {
   return dataToRender;
 };
 
-function FilterSliders({dataFilter, setDataFilter}){
+function FilterSliders({ dataFilter, setDataFilter }) {
   const [enableNullAirlineEntry, setEnableNullAirlineEntry] = useState(
     dataFilter.showNullAirlineEntry === undefined ? true : dataFilter.showNullAirlineEntry
   );
@@ -48,9 +50,13 @@ function FilterSliders({dataFilter, setDataFilter}){
   };
 
   const filterDataByNullEntry = useCallback(() => {
-    setDataFilter({ altitude: dataFilter.altitude, speed: dataFilter.speed, showNullAirlineEntry: !enableNullAirlineEntry });
+    setDataFilter({
+      altitude: dataFilter.altitude,
+      speed: dataFilter.speed,
+      showNullAirlineEntry: !enableNullAirlineEntry,
+    });
     setEnableNullAirlineEntry(!enableNullAirlineEntry);
-  }, [enableNullAirlineEntry, dataFilter, setDataFilter, ]);
+  }, [enableNullAirlineEntry, dataFilter, setDataFilter]);
 
   function altitudeValueText(value) {
     return `${value} m`;
@@ -60,8 +66,19 @@ function FilterSliders({dataFilter, setDataFilter}){
   }
 
   const filterDataBySpeedAltitude = useCallback(() => {
-    setDataFilter({showNullAirlineEntry: dataFilter.showNullAirlineEntry, altitude: altitudeFilter, speed: speedFilter });
+    setDataFilter({
+      showNullAirlineEntry: dataFilter.showNullAirlineEntry,
+      altitude: altitudeFilter,
+      speed: speedFilter,
+    });
   }, [altitudeFilter, speedFilter, dataFilter.showNullAirlineEntry, setDataFilter]);
+
+  const resetFilter = useCallback(() => {
+    setSpeedFilter([0, 1500]);
+    setAltitudeFilter([0, 15000]);
+    setEnableNullAirlineEntry(true);
+    setDataFilter({ showNullAirlineEntry: true, altitude: [0, 15000], speed: [0, 1500] });
+  }, [setDataFilter]);
 
   return (
     <div className="container">
@@ -111,8 +128,15 @@ function FilterSliders({dataFilter, setDataFilter}){
           </button>
         </div>
       </div>
+      <div className="row mb-5">
+        <div className="col-6 mx-auto">
+          <Button variant="contained" color="warning" onClick={resetFilter} startIcon={<DeleteIcon />}>
+            Reset All Filters
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
 
-export {filterData, FilterSliders};
+export { filterData, FilterSliders };
