@@ -10,6 +10,7 @@ const sortOptions = ["Default", "Callsign", "Speed", "Route Distance"];
 
 // Alphanumeric sort taken from: https://stackoverflow.com/questions/4340227/sort-mixed-alpha-numeric-array
 function AlphaNumericSort() {
+  // Index 1 of the JSON object (aka "a" and "b" that gets passed in) represents the Callsign (i.e. AAL123)
   const reA = /[^a-zA-Z]/g;
   const reN = /[^0-9]/g;
   return function (a, b) {
@@ -17,12 +18,11 @@ function AlphaNumericSort() {
     if (a[1] === b[1]) {
       return 0;
     }
-
     // nulls sort after anything else
-    if (a[1] === null) {
+    if (a[1] === null || a[1] === undefined || a[1].trim() === "") {
       return 1;
     }
-    if (b[1] === null) {
+    if (b[1] === null || b[1] === undefined || b[1].trim() === "") {
       return -1;
     }
 
@@ -39,12 +39,14 @@ function AlphaNumericSort() {
 }
 
 function SortWithSpeed() {
+  //Index 9 of the JSON object represents the speed of given data
   return function (a, b) {
-    // equal items sort equally
+    return a[9] === b[9] ? 0 : a[9] === null ? 1 : b[9] === null ? -1 : a[9] - b[9];
+    /*
+    Basically, the above code is doing this:
     if (a[9] === b[9]) {
       return 0;
     }
-
     // nulls sort after anything else
     if (a[9] === null) {
       return 1;
@@ -53,6 +55,20 @@ function SortWithSpeed() {
       return -1;
     }
     return a[9] - b[9];
+    */
+  };
+}
+
+function SortWithRouteDistance() {
+  //"totalDistance" in JSON stores the total route distance.
+  return function (a, b) {
+    return a["totalDistance"] === b["totalDistance"]
+      ? 0
+      : a["totalDistance"] === null
+      ? 1
+      : b["totalDistance"] === null
+      ? -1
+      : a["totalDistance"] - b["totalDistance"];
   };
 }
 
@@ -62,6 +78,8 @@ const sortData = (data, option) => {
       return data.sort(AlphaNumericSort());
     case sortOptions[2]:
       return data.sort(SortWithSpeed());
+    case sortOptions[3]:
+      return data.sort(SortWithRouteDistance());
     default:
       return data;
   }

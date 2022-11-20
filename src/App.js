@@ -9,7 +9,7 @@ import { SortByMenu, sortData } from "./Sort.js";
 
 //https://github.com/sexym0nk3y/airline-logos airline logo
 
-function CurrentAirplenStatus({ data, filter, sortBy}) {
+function CurrentAirplenStatus({ data, filter, sortBy }) {
   const dataToRender = sortData(filterData(data, filter), sortBy);
 
   return dataToRender.map((flight, index) => {
@@ -49,7 +49,7 @@ function CurrentAirplenStatus({ data, filter, sortBy}) {
       }
     }
 
-    const invalidCallsign = callsign === null || callsign === undefined || callsign === "";
+    const invalidCallsign = callsign === null || callsign === undefined || callsign.trim() === '';
 
     const routeDistance = flight["totalDistance"];
 
@@ -175,7 +175,7 @@ function App() {
       {loadComplete === false ? (
         <div>Please wait for the data to load</div>
       ) : (
-        <CurrentAirplenStatus data={flights} filter={dataFilter} sortBy={sortBy}/>
+        <CurrentAirplenStatus data={flights} filter={dataFilter} sortBy={sortBy} />
       )}
 
       <button onClick={() => saveDataAsJSON(flights)}> Save RealTime JSON Data </button>

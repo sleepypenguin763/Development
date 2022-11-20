@@ -29,8 +29,8 @@ const distance = (lat1, lat2, lon1, lon2) => {
 */
 const calculateRouteDistance = (data, min, max) => {
   const out = data.map((flight, index) => {
-    if (index < min || index > max){
-      return {...flight};
+    if (index < min || index > max) {
+      return { ...flight };
     }
     const airportData = flight["airportData"] === null ? null : flight["airportData"];
     let longLatCoordinates = [];
@@ -66,6 +66,6 @@ const calculateRouteDistance = (data, min, max) => {
     return { ...flight, totalDistance: routeDistance };
   });
   return out;
-}
+};
 
 export { calculateRouteDistance };
