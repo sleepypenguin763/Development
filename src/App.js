@@ -5,6 +5,7 @@ import jsonFlightData from "./assets/data.json";
 import { calculateRouteDistance } from "./Distance.js";
 import { filterData, FilterSliders } from "./Filter.js";
 import { SetupProgressBar } from "./ProgressBar.js";
+import { SortByMenu } from "./Sort.js";
 
 //https://github.com/sexym0nk3y/airline-logos airline logo
 
@@ -86,6 +87,7 @@ function App() {
   const [loadedLiveFlights, setLoadedLiveFlights] = useState(false);
 
   const [dataFilter, setDataFilter] = useState({ showNullAirlineEntry: true, altitude: [0, 15000], speed: [0, 1500] });
+  const [sortBy, setSortBy] = useState("Default");
 
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [dataSize, setDataSize] = useState(1);
@@ -169,6 +171,7 @@ function App() {
       {(100 * loadingProgress) / dataSize < 99.5 && <SetupProgressBar value={(100 * loadingProgress) / dataSize} />}
 
       {loadComplete && <FilterSliders dataFilter={dataFilter} setDataFilter={setDataFilter} />}
+      {loadComplete && <SortByMenu sortBy={sortBy} setSortBy={setSortBy} />}
       {loadComplete === false ? (
         <div>Please wait for the data to load</div>
       ) : (

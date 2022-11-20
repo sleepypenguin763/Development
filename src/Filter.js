@@ -114,11 +114,16 @@ function FilterSliders({ dataFilter, setDataFilter }) {
           />
         </div>
       </div>
-      <div className="row mb-5">
-        <div className="col-4 mx-auto">
+      <div className="row mb-5 justify-content-center">
+        <div className="col-lg-4 col-md-6 col-sm-12 mb-2">
           <button className="btn btn-primary" onClick={filterDataBySpeedAltitude}>
             Filter!
           </button>
+        </div>
+        <div className="col-lg-4 col-md-6 col-sm-12 mb-2">
+          <Button variant="contained" color="warning" onClick={resetFilter} startIcon={<DeleteIcon />}>
+            Reset All Filters
+          </Button>
         </div>
       </div>
       <div className="row mb-5">
@@ -126,13 +131,6 @@ function FilterSliders({ dataFilter, setDataFilter }) {
           <button onClick={filterDataByNullEntry}>
             {enableNullAirlineEntry ? "Remove unrecognized flights" : "Show unrecognized flights"}
           </button>
-        </div>
-      </div>
-      <div className="row mb-5">
-        <div className="col-6 mx-auto">
-          <Button variant="contained" color="warning" onClick={resetFilter} startIcon={<DeleteIcon />}>
-            Reset All Filters
-          </Button>
         </div>
       </div>
     </div>
