@@ -1,4 +1,10 @@
-import { useEffect, useState } from "react";
+import BookmarkIcon from "@mui/icons-material/Bookmark";
+import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
+import Checkbox from "@mui/material/Checkbox";
+import FormControl from "@mui/material/FormControl";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Typography from "@mui/material/Typography";
+import { useCallback, useEffect, useState } from "react";
 import { apiRequest, getAirlineData, getAirportData, getFlightRoutes, saveDataAsJSON } from "./APIRequests.js";
 import "./App.css";
 import jsonFlightData from "./assets/data.json";
@@ -9,8 +15,19 @@ import { SortByMenu, sortData } from "./Sort.js";
 
 //https://github.com/sexym0nk3y/airline-logos airline logo
 
-function CurrentAirplenStatus({ data, filter, sortBy }) {
+function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark }) {
   const dataToRender = sortData(filterData(data, filter), sortBy);
+  const onSetBookMark = useCallback(
+    (index) => {
+      if (bookmark && index in bookmark) {
+        const currVal = bookmark[index];
+        setBookmark((prevState) => ({ ...prevState, [index]: !currVal }));
+      } else {
+        setBookmark((prevState) => ({ ...prevState, [index]: true }));
+      }
+    },
+    [bookmark, setBookmark]
+  );
 
   return dataToRender.map((flight, index) => {
     const callsign = flight[1];
@@ -49,13 +66,38 @@ function CurrentAirplenStatus({ data, filter, sortBy }) {
       }
     }
 
-    const invalidCallsign = callsign === null || callsign === undefined || callsign.trim() === '';
+    const invalidCallsign = callsign === null || callsign === undefined || callsign.trim() === "";
 
     const routeDistance = flight["totalDistance"];
 
+    const flightID = flight["id"];
+
     return (
       <div key={index}>
-        <h1>CallSign: {invalidCallsign ? "Undefined" : callsign}</h1>
+        <FormControl component="fieldset">
+          <FormControlLabel
+            value="start"
+            control={
+              <Checkbox
+                icon={<BookmarkBorderIcon />}
+                checkedIcon={<BookmarkIcon />}
+                onChange={() => {
+                  onSetBookMark(flightID);
+                }}
+                checked={bookmark && flightID in bookmark && bookmark[flightID] === true ? true : false}
+                sx={{
+                  "& .MuiSvgIcon-root": {
+                    fontSize: "2rem",
+                  },
+                }}
+              />
+            }
+            label={
+              <Typography variant="h4">{invalidCallsign ? "Callsign: Undefined" : "Callsign: " + callsign}</Typography>
+            }
+            labelPlacement="start"
+          />
+        </FormControl>
         {!invalidCallsign && <p>Airline: {airline === null ? "Airline not found" : airline}</p>}
         <p>Route (ICAO): {route === null ? "Route not found" : route}</p>
         {route !== null && <p>Route: {airportNames === "" ? "Route not found" : airportNames}</p>}
@@ -77,6 +119,13 @@ function CurrentAirplenStatus({ data, filter, sortBy }) {
   });
 }
 
+function ViewBookmarked({data, bookmark}){
+  console.log(bookmark);
+  return (
+    <div></div>
+  );
+}
+
 function App() {
   const [flights, setFlights] = useState();
   const [loadComplete, setLoadComplete] = useState(false);
@@ -91,6 +140,8 @@ function App() {
 
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [dataSize, setDataSize] = useState(1);
+
+  const [bookmark, setBookmark] = useState({});
 
   const loadUsingJSON = true;
 
@@ -117,12 +168,12 @@ function App() {
           const resp = await getFlightRoutes(flight[1]);
           const airlineName = await getAirlineData(flight[1], resp);
           const airportData = await getAirportData(resp);
-          return { ...flight, callsign: resp, airline: airlineName, airportData: airportData };
+          return { ...flight, callsign: resp, airline: airlineName, airportData: airportData, id: index};
         }
-        return { ...flight, callsign: null, airline: null, airportData: null };
+        return { ...flight, callsign: null, airline: null, airportData: null, id: index};
       });
       await Promise.all(tmp).then((out) => {
-        setLoadComplete(true);
+        // setLoadComplete(true);
         setLoadStartIndex(batchLoadingItemNum);
         setLoadingProgress(batchLoadingItemNum);
         setFlights(calculateRouteDistance(out, 0, batchLoadingItemNum));
@@ -144,7 +195,7 @@ function App() {
           const resp = await getFlightRoutes(flight[1]);
           const airlineName = await getAirlineData(flight[1], resp);
           const airportData = await getAirportData(resp);
-          return { ...flight, callsign: resp, airline: airlineName, airportData: airportData };
+          return { ...flight, callsign: resp, airline: airlineName, airportData: airportData, id: index};
         }
         return { ...flight };
       });
@@ -155,6 +206,8 @@ function App() {
         if (loadStartIndex + batchLoadingItemNum < flights.length) {
           setLoadStartIndex(loadStartIndex + batchLoadingItemNum);
           setbatchLoadingIndex(batchLoadingIndex + 1);
+        }else {
+          setLoadComplete(true);
         }
       });
     };
@@ -172,10 +225,17 @@ function App() {
 
       {loadComplete && <FilterSliders dataFilter={dataFilter} setDataFilter={setDataFilter} />}
       {loadComplete && <SortByMenu sortBy={sortBy} setSortBy={setSortBy} />}
+      {loadComplete && <ViewBookmarked bookmark={bookmark} data={flights}/>}
       {loadComplete === false ? (
         <div>Please wait for the data to load</div>
       ) : (
-        <CurrentAirplenStatus data={flights} filter={dataFilter} sortBy={sortBy} />
+        <CurrentAirplenStatus
+          data={flights}
+          filter={dataFilter}
+          sortBy={sortBy}
+          bookmark={bookmark}
+          setBookmark={setBookmark}
+        />
       )}
 
       <button onClick={() => saveDataAsJSON(flights)}> Save RealTime JSON Data </button>
