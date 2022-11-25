@@ -14,9 +14,10 @@ import { SetupProgressBar } from "./ProgressBar.js";
 import { SortByMenu, sortData } from "./Sort.js";
 
 //https://github.com/sexym0nk3y/airline-logos airline logo
+//Will only show 1000 relevant planes in order to reduce the memory usage
 
 function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark }) {
-  const dataToRender = sortData(filterData(data, filter), sortBy);
+  const dataToRender = sortData(filterData(data, filter), sortBy).slice(0, 1000);
   const onSetBookMark = useCallback(
     (index) => {
       if (bookmark && index in bookmark) {
@@ -30,6 +31,7 @@ function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark }) {
   );
 
   return dataToRender.map((flight, index) => {
+
     const callsign = flight[1];
     const flightData = flight["callsign"] === null ? null : flight["callsign"];
     let route = null;
@@ -135,7 +137,7 @@ function App() {
 
   const [loadedLiveFlights, setLoadedLiveFlights] = useState(false);
 
-  const [dataFilter, setDataFilter] = useState({ showNullAirlineEntry: true, altitude: [0, 15000], speed: [0, 1500] });
+  const [dataFilter, setDataFilter] = useState({ showNullAirlineEntry: true, altitude: [5000, 7000], speed: [300, 500] });
   const [sortBy, setSortBy] = useState("Default");
 
   const [loadingProgress, setLoadingProgress] = useState(0);
