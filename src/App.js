@@ -13,13 +13,20 @@ import { filterData, FilterSliders } from "./Filter.js";
 import { SetupProgressBar } from "./ProgressBar.js";
 import { SortByMenu, sortData } from "./Sort.js";
 
+const importAllLogos = (r) => {
+  let images = {};
+  r.keys().map((item, _) => { images[item.replace('./', '')] = r(item); });
+  return images;
+}
+
 //https://github.com/sexym0nk3y/airline-logos airline logo
 //Will only show 1000 relevant planes in order to reduce the memory usage
 
-function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark }) {
+function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark, logos }) {
   const dataToRender = sortData(filterData(data, filter), sortBy).slice(0, 1000);
   const onSetBookMark = useCallback(
     (index) => {
+      //using dictionary instead of list for bookmarks in order to reduce memory usage
       if (bookmark && index in bookmark) {
         const currVal = bookmark[index];
         setBookmark((prevState) => ({ ...prevState, [index]: !currVal }));
@@ -74,6 +81,9 @@ function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark }) {
 
     const flightID = flight["id"];
 
+    const logoPath = invalidCallsign ? null : callsign.slice(0, 3) + '.png';
+
+
     return (
       <div key={index}>
         <FormControl component="fieldset">
@@ -95,7 +105,7 @@ function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark }) {
               />
             }
             label={
-              <Typography variant="h4">{invalidCallsign ? "Callsign: Undefined" : "Callsign: " + callsign}</Typography>
+              <Typography variant="h4"><img style={{maxWidth: "50px", marginRight: "10px"}} src={logos[logoPath]}/>{invalidCallsign ? "Callsign Undefined" : callsign}</Typography>
             }
             labelPlacement="start"
           />
@@ -144,6 +154,7 @@ function App() {
   const [dataSize, setDataSize] = useState(1);
 
   const [bookmark, setBookmark] = useState({});
+  const [logos, setLogos] = useState([]);
 
   const loadUsingJSON = true;
 
@@ -175,7 +186,6 @@ function App() {
         return { ...flight, callsign: null, airline: null, airportData: null, id: index};
       });
       await Promise.all(tmp).then((out) => {
-        // setLoadComplete(true);
         setLoadStartIndex(batchLoadingItemNum);
         setLoadingProgress(batchLoadingItemNum);
         setFlights(calculateRouteDistance(out, 0, batchLoadingItemNum));
@@ -210,6 +220,8 @@ function App() {
           setbatchLoadingIndex(batchLoadingIndex + 1);
         }else {
           setLoadComplete(true);
+          const images = importAllLogos(require.context('./assets/logos', false, /\.(png)$/));
+          setLogos(images);
         }
       });
     };
@@ -237,6 +249,7 @@ function App() {
           sortBy={sortBy}
           bookmark={bookmark}
           setBookmark={setBookmark}
+          logos={logos}
         />
       )}
 
