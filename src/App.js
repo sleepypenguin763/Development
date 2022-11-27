@@ -7,7 +7,7 @@ import Typography from "@mui/material/Typography";
 import { useCallback, useEffect, useState } from "react";
 import { apiRequest, getAirlineData, getAirportData, getFlightRoutes, saveDataAsJSON } from "./APIRequests.js";
 import "./App.css";
-import jsonFlightData from "./assets/test.json";
+import jsonFlightData from "./assets/data.json";
 import { aggregataTotalDistance, calculateRouteDistance } from "./Distance.js";
 import { filterData, FilterSliders } from "./Filter.js";
 import { SetupProgressBar } from "./ProgressBar.js";
@@ -37,7 +37,7 @@ function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark, log
     [bookmark, setBookmark]
   );
 
-  return dataToRender.map((flight, index) => {
+  const dataSection =  dataToRender.map((flight, index) => {
     const callsign = flight[1];
     const flightData = flight["callsign"] === null ? null : flight["callsign"];
     let route = null;
@@ -83,8 +83,8 @@ function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark, log
     const logoPath = invalidCallsign ? null : callsign.slice(0, 3) + ".png";
 
     return (
-      <div key={index}>
-        <FormControl component="fieldset">
+      <div key={index} className="col-sm-12 col-md-6 col-lg-6">
+        <FormControl component="fieldset" className="text-center mx-auto">
           <FormControlLabel
             value="start"
             control={
@@ -125,11 +125,18 @@ function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark, log
         <p>
           Longitude / Latitude: {parseFloat(flight[5])} / {parseFloat(flight[6])}
         </p>
-        <hr></hr>
+        <br></br>
         <br></br>
       </div>
     );
   });
+  return (
+    <div className="container">
+      <div className="row">
+        {dataSection}
+      </div>
+    </div>
+  );
 }
 
 function ShowAggregatedContent({totalDistance}){
@@ -189,7 +196,7 @@ function App() {
 
   const [viewBookmarked, setViewBookmarked] = useState(false);
 
-  const loadUsingJSON = false;
+  const loadUsingJSON = true;
 
   const batchLoadingItemNum = 500;
 
@@ -228,7 +235,7 @@ function App() {
         setFlights(calculateRouteDistance(out, 0, batchLoadingItemNum));
       });
     };
-    //loadUsingJSON && loadInit();
+    loadInit();
   }, []);
 
   /*
