@@ -24,9 +24,15 @@ Each component consists of the following:
 Now, the "Route" and "Total Route Distance" component will not appear if the Airline/Route information is not available for the given callsign.
 
 
-
 ### How Data is Passed Down Through Components
 
 ### How the User Triggers State Changes
-There are two sliders and one button at the top of the screen. Two sliders can filter the speed and altitude of the flight, and the page will show the airplanes that is flying in that range of altitude / speed. There are also a button that filters undefined airplanes (i.e. private jets / cesna etc.).
+There are two sliders and one button at the top of the screen. Two sliders can filter the speed and altitude of the flight, and the page will show the airplanes that is flying in that range of altitude / speed. There are also a button that filters undefined airplanes (i.e. private jets / cesna etc.). The program will only show 1000 relevant flights in order to increase the page loading speed. 
+
+### Aggregation
+Aggregation system is implemented via "bookmark" feature. User can click on the icon right beside each flight's callsign to bookmark the flight. Then, the user can click on "Show Bookmarked flights" in order to view which flights have been bookmarked, and will show the aggregated total route distance if availabel. Since it is possible that certain flights do not have relevant information (i.e. private jets), it will also count for number of unknown route/callsigns. 
+
+
+### Note about the data provided
+Due to the larger volume of data being loaded, it is possible that sometimes it fails to load few data points and will show "Airline not found" even when the logo is present. However, this is rare, and it is also possible that the route of the flight is not plotted on the dataset I am using to map each callsigns to airline/routes. Also, the data presented on this website can be delayed by few minuites and might not be completely accurate. 
 
