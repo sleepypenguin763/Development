@@ -2,6 +2,7 @@
 
 ### Link to Deployed Website
 https://sleepypenguin763.github.io/Development/
+NOTE: It will take roughly 30 seconds to load the page, and this is because there are a lot of API fetching going on. You can see the loading progress bar once you get to the page, but if the progress bar does not reach 100% even after waiting for a minuite or so, please refresh the page. Also, once you can see the content of the page, please DO NOT refresh the page as this will trigger new set of API fetching, and OpenSky has limited free API calls per timeframe. Additionally, I do not recommend the use of VPN while viewing the website as this could cause even slower loading time.
 
 ### API
 [Here](https://github.com/sleepypenguin763/Airlines) is where the mock REST API regarding the airline, aircraft, airports, and country lives. Please read the README in side this repo to see how the Mock REST API is organized.
