@@ -8,7 +8,13 @@ const filterData = (data, filter) => {
   let dataToRender = data;
   if (filter.length !== 0 && filter.showNullAirlineEntry !== null && filter.showNullAirlineEntry === false) {
     dataToRender = dataToRender.filter((flight) => {
-      return flight["airline"] !== null;
+      return (
+        flight["airline"] !== null &&
+        flight["airline"] !== undefined &&
+        flight[1] !== null &&
+        flight[1] !== undefined &&
+        flight[1].trim() !== ""
+      );
     });
   }
   if (filter.length !== 0 && filter.altitude !== null && filter.altitude !== undefined) {
@@ -88,8 +94,8 @@ function FilterSliders({ dataFilter, setDataFilter, setViewBookmarked, viewBookm
   return (
     <div className="container">
       <div className="row justify-content-center mb-5">
-        <div className="col-2">Speed:</div>
-        <div className="col-4 align-bottom">
+        <div className="col-lg-2 col-md-4 col-sm-4">Speed:</div>
+        <div className="col-lg-4 col-md-6 col-sm-12 align-bottom">
           <Slider
             getAriaLabel={() => "Filter with Speed"}
             value={speedFilter}
@@ -104,8 +110,8 @@ function FilterSliders({ dataFilter, setDataFilter, setViewBookmarked, viewBookm
         </div>
       </div>
       <div className="row justify-content-center mb-5">
-        <div className="col-2">Altitude:</div>
-        <div className="col-4 align-bottom">
+        <div className="col-lg-2 col-md-4 col-sm-4">Altitude:</div>
+        <div className="col-lg-4 col-md-6 col-sm-12 align-bottom">
           <Slider
             getAriaLabel={() => "Filter with Altitude"}
             value={altitudeFilter}
@@ -132,7 +138,7 @@ function FilterSliders({ dataFilter, setDataFilter, setViewBookmarked, viewBookm
         </div>
       </div>
       <div className="row mb-5 justify-content-center">
-        <div className="col-lg-4 col-md-6 col-sm-12">
+        <div className="col-lg-4 col-md-6 col-sm-12 mb-2">
           <Button
             variant="contained"
             color="warning"
@@ -142,7 +148,7 @@ function FilterSliders({ dataFilter, setDataFilter, setViewBookmarked, viewBookm
             {enableNullAirlineEntry ? "Remove unrecognized flights" : "Show unrecognized flights"}
           </Button>
         </div>
-        <div className="col-lg-4 col-md-6 col-sm-12">
+        <div className="col-lg-4 col-md-6 col-sm-12 mb-2">
           <Button variant="contained" color="secondary" onClick={showBookmarked} startIcon={<BookmarkBorder />}>
             {viewBookmarked ? "Hide Bookmarked Flights" : "View Bookmarked Flights"}
           </Button>

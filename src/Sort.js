@@ -96,7 +96,7 @@ function SortByMenu({ sortBy, setSortBy }) {
   return (
     <div className="container">
       <div className="row justify-content-center mb-5 align-items-center">
-        <div className="col-4">
+        <div className="col-lg-4 col-md-6 col-sm-12">
           <FormControl fullWidth>
             <InputLabel id="demo-simple-select-label">Sort By</InputLabel>
             <Select
@@ -113,7 +113,7 @@ function SortByMenu({ sortBy, setSortBy }) {
             </Select>
           </FormControl>
         </div>
-        <div className="col-4">
+        <div className="col-lg-4 col-md-6 col-sm-12">
           <Button variant="contained" color="warning" onClick={onSort} startIcon={<SortIcon />}>
             Sort
           </Button>

@@ -45,8 +45,8 @@ export function SetupProgressBar({ value }) {
   return (
     <div className="container">
       <div className="row justify-content-center mb-5 mx-auto">
-        <div className="col-2">Loading... </div>
-        <div className="col-4 align-bottom">
+        <div className="col-lg-2 col-md-4 col-sm-6">Loading... </div>
+        <div className="col-lg-4 col-md-6 col-sm-12  align-bottom">
           <CheckMarkSlider value={value} disabled components={{ Thumb: CheckMarkThumbComponent }} />
         </div>
       </div>
