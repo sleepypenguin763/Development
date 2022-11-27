@@ -7,8 +7,8 @@ import Typography from "@mui/material/Typography";
 import { useCallback, useEffect, useState } from "react";
 import { apiRequest, getAirlineData, getAirportData, getFlightRoutes, saveDataAsJSON } from "./APIRequests.js";
 import "./App.css";
-import jsonFlightData from "./assets/data.json";
-import { calculateRouteDistance } from "./Distance.js";
+import jsonFlightData from "./assets/test.json";
+import { aggregataTotalDistance, calculateRouteDistance } from "./Distance.js";
 import { filterData, FilterSliders } from "./Filter.js";
 import { SetupProgressBar } from "./ProgressBar.js";
 import { SortByMenu, sortData } from "./Sort.js";
@@ -21,9 +21,7 @@ const importAllLogos = (r) => {
   return images;
 };
 
-//https://github.com/sexym0nk3y/airline-logos airline logo
 //Will only show 1000 relevant planes in order to reduce the memory usage
-
 function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark, logos }) {
   const dataToRender = sortData(filterData(data, filter), sortBy).slice(0, 1000);
   const onSetBookMark = useCallback(
@@ -134,19 +132,36 @@ function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark, log
   });
 }
 
+function ShowAggregatedContent({totalDistance}){
+  const knownDistance = totalDistance[0].toFixed(3);
+  const unknownRouteTotal = totalDistance[1];
+  return (
+    <div>
+      <h3>Aggregation (Filters applied in bookmark will not affect the below stats)</h3>
+      <h4>Total Route Distance (for recognized flights): {knownDistance} km</h4>
+      <h4>Number of Unrecognized Flights: {unknownRouteTotal}</h4>
+      <br></br>
+    </div>
+  );
+}
+
 function ViewBookmarked({ data, bookmark, filter, sortBy, setBookmark, logos }) {
   const dataToRender = data.filter((flight) => {
     return flight["id"] in bookmark && bookmark[flight["id"]] === true;
   });
+  const totalRouteDistance = aggregataTotalDistance(dataToRender);
   return (
-    <CurrentAirplenStatus
-      data={dataToRender}
-      filter={filter}
-      sortBy={sortBy}
-      bookmark={bookmark}
-      setBookmark={setBookmark}
-      logos={logos}
-    />
+    <div>
+      <ShowAggregatedContent totalDistance={totalRouteDistance}/>
+      <CurrentAirplenStatus
+        data={dataToRender}
+        filter={filter}
+        sortBy={sortBy}
+        bookmark={bookmark}
+        setBookmark={setBookmark}
+        logos={logos}
+      />
+    </div>
   );
 }
 
@@ -174,7 +189,7 @@ function App() {
 
   const [viewBookmarked, setViewBookmarked] = useState(false);
 
-  const loadUsingJSON = true;
+  const loadUsingJSON = false;
 
   const batchLoadingItemNum = 500;
 
@@ -183,18 +198,22 @@ function App() {
       await apiRequest().then((out) => {
         setFlights(out);
         setLoadedLiveFlights(true);
+        loadInit();
       });
     };
     !loadUsingJSON && getFlightsFromAPI();
 
     const getFlightsFromJSON = jsonFlightData;
-    setDataSize(getFlightsFromJSON.states.length);
+    loadUsingJSON && setDataSize(getFlightsFromJSON.states.length);
     const loadInit = async () => {
       if (loadedLiveFlights === false && loadUsingJSON === false) {
         return;
       }
+      !loadUsingJSON && setDataSize(flights.states.length);
 
-      const tmp = getFlightsFromJSON.states.map(async (flight, index) => {
+      const flightStates = loadUsingJSON ? getFlightsFromJSON.states : flights.states;
+
+      const tmp = flightStates.map(async (flight, index) => {
         if (index < batchLoadingItemNum) {
           const resp = await getFlightRoutes(flight[1]);
           const airlineName = await getAirlineData(flight[1], resp);
@@ -209,7 +228,7 @@ function App() {
         setFlights(calculateRouteDistance(out, 0, batchLoadingItemNum));
       });
     };
-    loadInit();
+    //loadUsingJSON && loadInit();
   }, []);
 
   /*
@@ -276,15 +295,17 @@ function App() {
       )}
       {loadComplete === false ? (
         <div>Please wait for the data to load</div>
-      ) : !viewBookmarked && (
-        <CurrentAirplenStatus
-          data={flights}
-          filter={dataFilter}
-          sortBy={sortBy}
-          bookmark={bookmark}
-          setBookmark={setBookmark}
-          logos={logos}
-        />
+      ) : (
+        !viewBookmarked && (
+          <CurrentAirplenStatus
+            data={flights}
+            filter={dataFilter}
+            sortBy={sortBy}
+            bookmark={bookmark}
+            setBookmark={setBookmark}
+            logos={logos}
+          />
+        )
       )}
 
       <button onClick={() => saveDataAsJSON(flights)}> Save RealTime JSON Data </button>

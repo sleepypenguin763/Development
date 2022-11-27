@@ -81,7 +81,7 @@ function FilterSliders({ dataFilter, setDataFilter, setViewBookmarked, viewBookm
     setDataFilter({ showNullAirlineEntry: true, altitude: [0, 15000], speed: [0, 1500] });
   }, [setDataFilter]);
 
-  const showBookmarked = useCallback(() =>{
+  const showBookmarked = useCallback(() => {
     setViewBookmarked(!viewBookmarked);
   }, [setViewBookmarked, viewBookmarked]);
 
@@ -143,7 +143,7 @@ function FilterSliders({ dataFilter, setDataFilter, setViewBookmarked, viewBookm
           </Button>
         </div>
         <div className="col-lg-4 col-md-6 col-sm-12">
-          <Button variant="contained" color="secondary" onClick={showBookmarked} startIcon={<BookmarkBorder/>}>
+          <Button variant="contained" color="secondary" onClick={showBookmarked} startIcon={<BookmarkBorder />}>
             {viewBookmarked ? "Hide Bookmarked Flights" : "View Bookmarked Flights"}
           </Button>
         </div>

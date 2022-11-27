@@ -68,4 +68,18 @@ const calculateRouteDistance = (data, min, max) => {
   return out;
 };
 
-export { calculateRouteDistance };
+const aggregataTotalDistance = (route) => {
+  var distanceSum = 0;
+  var unknown = 0;
+  route.forEach((flight) => {
+    const currFlightDistance = flight["totalDistance"];
+    if (currFlightDistance === null || currFlightDistance === undefined){
+      unknown += 1;
+    }else {
+      distanceSum += currFlightDistance;
+    }
+  });
+  return [distanceSum, unknown];
+};
+
+export { aggregataTotalDistance, calculateRouteDistance };
