@@ -56,8 +56,8 @@ const getFlightRoutes = async (callsign) => {
   return await response.json();
 };
 
-const getAirlineData = async (callsign, resp) => {
-  if (callsign === undefined || callsign === null || resp === null) {
+const getAirlineData = async (callsign) => {
+  if (callsign === undefined || callsign === null) {
     return null;
   }
   const firstThreeChar = callsign.slice(0, 3);

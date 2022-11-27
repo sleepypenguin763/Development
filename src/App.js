@@ -111,7 +111,7 @@ function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark, log
             labelPlacement="start"
           />
         </FormControl>
-        {!invalidCallsign && <p>Airline: {airline === null ? "Airline not found" : airline}</p>}
+        {<p>Airline: {airline === null ? "Airline not found" : airline}</p>}
         <p>Route (ICAO): {route === null ? "Route not found" : route}</p>
         {route !== null && <p>Route: {airportNames === "" ? "Route not found" : airportNames}</p>}
         {route !== null && (
@@ -223,7 +223,7 @@ function App() {
       const tmp = flightStates.map(async (flight, index) => {
         if (index < batchLoadingItemNum) {
           const resp = await getFlightRoutes(flight[1]);
-          const airlineName = await getAirlineData(flight[1], resp);
+          const airlineName = await getAirlineData(flight[1]);
           const airportData = await getAirportData(resp);
           return { ...flight, callsign: resp, airline: airlineName, airportData: airportData, id: index };
         }
@@ -249,7 +249,7 @@ function App() {
       const tmp = flights.map(async (flight, index) => {
         if ((index >= loadStartIndex) & (index < loadStartIndex + batchLoadingItemNum)) {
           const resp = await getFlightRoutes(flight[1]);
-          const airlineName = await getAirlineData(flight[1], resp);
+          const airlineName = await getAirlineData(flight[1]);
           const airportData = await getAirportData(resp);
           return { ...flight, callsign: resp, airline: airlineName, airportData: airportData, id: index };
         }
