@@ -15,9 +15,11 @@ import { SortByMenu, sortData } from "./Sort.js";
 
 const importAllLogos = (r) => {
   let images = {};
-  r.keys().map((item, _) => { images[item.replace('./', '')] = r(item); });
+  r.keys().map((item, _) => {
+    images[item.replace("./", "")] = r(item);
+  });
   return images;
-}
+};
 
 //https://github.com/sexym0nk3y/airline-logos airline logo
 //Will only show 1000 relevant planes in order to reduce the memory usage
@@ -38,7 +40,6 @@ function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark, log
   );
 
   return dataToRender.map((flight, index) => {
-
     const callsign = flight[1];
     const flightData = flight["callsign"] === null ? null : flight["callsign"];
     let route = null;
@@ -81,8 +82,7 @@ function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark, log
 
     const flightID = flight["id"];
 
-    const logoPath = invalidCallsign ? null : callsign.slice(0, 3) + '.png';
-
+    const logoPath = invalidCallsign ? null : callsign.slice(0, 3) + ".png";
 
     return (
       <div key={index}>
@@ -105,7 +105,10 @@ function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark, log
               />
             }
             label={
-              <Typography variant="h4"><img style={{maxWidth: "50px", marginRight: "10px"}} src={logos[logoPath]}/>{invalidCallsign ? "Callsign Undefined" : callsign}</Typography>
+              <Typography variant="h4">
+                <img style={{ maxWidth: "50px", marginRight: "10px" }} src={logos[logoPath]} />
+                {invalidCallsign ? "Callsign Undefined" : callsign}
+              </Typography>
             }
             labelPlacement="start"
           />
@@ -131,10 +134,19 @@ function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark, log
   });
 }
 
-function ViewBookmarked({data, bookmark}){
-  console.log(bookmark);
+function ViewBookmarked({ data, bookmark, filter, sortBy, setBookmark, logos }) {
+  const dataToRender = data.filter((flight) => {
+    return flight["id"] in bookmark && bookmark[flight["id"]] === true;
+  });
   return (
-    <div></div>
+    <CurrentAirplenStatus
+      data={dataToRender}
+      filter={filter}
+      sortBy={sortBy}
+      bookmark={bookmark}
+      setBookmark={setBookmark}
+      logos={logos}
+    />
   );
 }
 
@@ -147,7 +159,11 @@ function App() {
 
   const [loadedLiveFlights, setLoadedLiveFlights] = useState(false);
 
-  const [dataFilter, setDataFilter] = useState({ showNullAirlineEntry: true, altitude: [5000, 7000], speed: [300, 500] });
+  const [dataFilter, setDataFilter] = useState({
+    showNullAirlineEntry: true,
+    altitude: [5000, 7000],
+    speed: [300, 500],
+  });
   const [sortBy, setSortBy] = useState("Default");
 
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -155,6 +171,8 @@ function App() {
 
   const [bookmark, setBookmark] = useState({});
   const [logos, setLogos] = useState([]);
+
+  const [viewBookmarked, setViewBookmarked] = useState(false);
 
   const loadUsingJSON = true;
 
@@ -181,9 +199,9 @@ function App() {
           const resp = await getFlightRoutes(flight[1]);
           const airlineName = await getAirlineData(flight[1], resp);
           const airportData = await getAirportData(resp);
-          return { ...flight, callsign: resp, airline: airlineName, airportData: airportData, id: index};
+          return { ...flight, callsign: resp, airline: airlineName, airportData: airportData, id: index };
         }
-        return { ...flight, callsign: null, airline: null, airportData: null, id: index};
+        return { ...flight, callsign: null, airline: null, airportData: null, id: index };
       });
       await Promise.all(tmp).then((out) => {
         setLoadStartIndex(batchLoadingItemNum);
@@ -207,7 +225,7 @@ function App() {
           const resp = await getFlightRoutes(flight[1]);
           const airlineName = await getAirlineData(flight[1], resp);
           const airportData = await getAirportData(resp);
-          return { ...flight, callsign: resp, airline: airlineName, airportData: airportData, id: index};
+          return { ...flight, callsign: resp, airline: airlineName, airportData: airportData, id: index };
         }
         return { ...flight };
       });
@@ -218,9 +236,9 @@ function App() {
         if (loadStartIndex + batchLoadingItemNum < flights.length) {
           setLoadStartIndex(loadStartIndex + batchLoadingItemNum);
           setbatchLoadingIndex(batchLoadingIndex + 1);
-        }else {
+        } else {
           setLoadComplete(true);
-          const images = importAllLogos(require.context('./assets/logos', false, /\.(png)$/));
+          const images = importAllLogos(require.context("./assets/logos", false, /\.(png)$/));
           setLogos(images);
         }
       });
@@ -234,15 +252,31 @@ function App() {
 
   return (
     <div className="App">
-      <h1 className="mb-5">Flight Description</h1>
+      <h1 className="mb-5">Live Flight Detail Viewer</h1>
       {(100 * loadingProgress) / dataSize < 99.5 && <SetupProgressBar value={(100 * loadingProgress) / dataSize} />}
 
-      {loadComplete && <FilterSliders dataFilter={dataFilter} setDataFilter={setDataFilter} />}
+      {loadComplete && (
+        <FilterSliders
+          dataFilter={dataFilter}
+          setDataFilter={setDataFilter}
+          setViewBookmarked={setViewBookmarked}
+          viewBookmarked={viewBookmarked}
+        />
+      )}
       {loadComplete && <SortByMenu sortBy={sortBy} setSortBy={setSortBy} />}
-      {loadComplete && <ViewBookmarked bookmark={bookmark} data={flights}/>}
+      {loadComplete && viewBookmarked && (
+        <ViewBookmarked
+          bookmark={bookmark}
+          data={flights}
+          filter={dataFilter}
+          sortBy={sortBy}
+          setBookmark={setBookmark}
+          logos={logos}
+        />
+      )}
       {loadComplete === false ? (
         <div>Please wait for the data to load</div>
-      ) : (
+      ) : !viewBookmarked && (
         <CurrentAirplenStatus
           data={flights}
           filter={dataFilter}

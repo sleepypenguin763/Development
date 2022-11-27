@@ -1,3 +1,4 @@
+import { BookmarkBorder, Visibility, VisibilityOff } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Button from "@mui/material/Button";
 import Slider from "@mui/material/Slider";
@@ -33,7 +34,7 @@ const filterData = (data, filter) => {
   return dataToRender;
 };
 
-function FilterSliders({ dataFilter, setDataFilter }) {
+function FilterSliders({ dataFilter, setDataFilter, setViewBookmarked, viewBookmarked }) {
   const [enableNullAirlineEntry, setEnableNullAirlineEntry] = useState(
     dataFilter.showNullAirlineEntry === undefined ? true : dataFilter.showNullAirlineEntry
   );
@@ -79,6 +80,10 @@ function FilterSliders({ dataFilter, setDataFilter }) {
     setEnableNullAirlineEntry(true);
     setDataFilter({ showNullAirlineEntry: true, altitude: [0, 15000], speed: [0, 1500] });
   }, [setDataFilter]);
+
+  const showBookmarked = useCallback(() =>{
+    setViewBookmarked(!viewBookmarked);
+  }, [setViewBookmarked, viewBookmarked]);
 
   return (
     <div className="container">
@@ -126,11 +131,21 @@ function FilterSliders({ dataFilter, setDataFilter }) {
           </Button>
         </div>
       </div>
-      <div className="row mb-5">
-        <div className="col-6 mx-auto">
-          <button onClick={filterDataByNullEntry}>
+      <div className="row mb-5 justify-content-center">
+        <div className="col-lg-4 col-md-6 col-sm-12">
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={filterDataByNullEntry}
+            startIcon={enableNullAirlineEntry ? <VisibilityOff /> : <Visibility />}
+          >
             {enableNullAirlineEntry ? "Remove unrecognized flights" : "Show unrecognized flights"}
-          </button>
+          </Button>
+        </div>
+        <div className="col-lg-4 col-md-6 col-sm-12">
+          <Button variant="contained" color="secondary" onClick={showBookmarked} startIcon={<BookmarkBorder/>}>
+            {viewBookmarked ? "Hide Bookmarked Flights" : "View Bookmarked Flights"}
+          </Button>
         </div>
       </div>
     </div>
