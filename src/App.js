@@ -23,7 +23,7 @@ const importAllLogos = (r) => {
 
 //Will only show 1000 relevant planes in order to reduce the memory usage
 function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark, logos }) {
-  const dataToRender = sortData(filterData(data, filter), sortBy).slice(0, 1000);
+  const dataToRender = sortData(filterData(data, filter), sortBy);
   const onSetBookMark = useCallback(
     (index) => {
       //using dictionary instead of list for bookmarks in order to reduce memory usage
@@ -104,7 +104,7 @@ function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark, log
             }
             label={
               <Typography variant="h4">
-                <img style={{ maxWidth: "50px", marginRight: "10px" }} src={logos[logoPath]} />
+                <img style={{ maxWidth: "50px", marginRight: "10px" }} src={logos[logoPath]}/>
                 {invalidCallsign ? "Callsign Undefined" : callsign}
               </Typography>
             }
@@ -179,12 +179,12 @@ function App() {
   const [batchLoadingIndex, setbatchLoadingIndex] = useState(0);
   const [loadStartIndex, setLoadStartIndex] = useState(0);
 
-  const [loadedLiveFlights, setLoadedLiveFlights] = useState(false);
-
   const [dataFilter, setDataFilter] = useState({
     showNullAirlineEntry: true,
     altitude: [5000, 7000],
     speed: [300, 500],
+    routeDistance: [0, 25000],
+    showUnknownRouteDistance: true,
   });
   const [sortBy, setSortBy] = useState("Default");
 
@@ -196,29 +196,17 @@ function App() {
 
   const [viewBookmarked, setViewBookmarked] = useState(false);
 
-  const loadUsingJSON = true;
+  const loadUsingJSON = false;
 
   const batchLoadingItemNum = 500;
 
   useEffect(() => {
-    const getFlightsFromAPI = async () => {
-      await apiRequest().then((out) => {
-        setFlights(out);
-        setLoadedLiveFlights(true);
-        loadInit();
-      });
-    };
-    !loadUsingJSON && getFlightsFromAPI();
-
     const getFlightsFromJSON = jsonFlightData;
     loadUsingJSON && setDataSize(getFlightsFromJSON.states.length);
-    const loadInit = async () => {
-      if (loadedLiveFlights === false && loadUsingJSON === false) {
-        return;
-      }
-      !loadUsingJSON && setDataSize(flights.states.length);
+    const loadInit = async (data) => {
+      !loadUsingJSON && setDataSize(data.states.length);
 
-      const flightStates = loadUsingJSON ? getFlightsFromJSON.states : flights.states;
+      const flightStates = loadUsingJSON ? getFlightsFromJSON.states : data.states;
 
       const tmp = flightStates.map(async (flight, index) => {
         if (index < batchLoadingItemNum) {
@@ -235,7 +223,19 @@ function App() {
         setFlights(calculateRouteDistance(out, 0, batchLoadingItemNum));
       });
     };
-    loadInit();
+
+    const getFlightsFromAPI = async () => {
+      await apiRequest().then((out) => {
+        setFlights(out);
+        loadInit(out);
+      });
+    };
+
+    if (loadUsingJSON){
+      loadInit(null);
+    }else {
+      getFlightsFromAPI();
+    }
   }, []);
 
   /*

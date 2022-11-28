@@ -1,6 +1,9 @@
 import { BookmarkBorder, Visibility, VisibilityOff } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
+import FormControl from "@mui/material/FormControl";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import Slider from "@mui/material/Slider";
 import { useCallback, useState } from "react";
 
@@ -37,6 +40,18 @@ const filterData = (data, filter) => {
       );
     });
   }
+  if (filter.length !== 0 && filter.routeDistance !== null && filter.routeDistance !== undefined) {
+    dataToRender = dataToRender.filter((flight) => {
+      return (
+        (flight["totalDistance"] !== null &&
+          flight["totalDistance"] !== undefined &&
+          parseFloat(flight["totalDistance"]) >= filter.routeDistance[0] &&
+          parseFloat(flight["totalDistance"]) <= filter.routeDistance[1]) ||
+        ((flight["totalDistance"] === null || flight["totalDistance"] === undefined) &&
+          filter.showUnknownRouteDistance === true)
+      );
+    });
+  }
   return dataToRender;
 };
 
@@ -48,6 +63,12 @@ function FilterSliders({ dataFilter, setDataFilter, setViewBookmarked, viewBookm
     dataFilter.altitude === undefined ? [0, 15000] : dataFilter.altitude
   );
   const [speedFilter, setSpeedFilter] = useState(dataFilter.speed === undefined ? [0, 1500] : dataFilter.speed);
+  const [routeDistanceFilter, setRouteDistanceFilter] = useState(
+    dataFilter.routeDistance === undefined ? [0, 25000] : dataFilter.routeDistance
+  );
+  const [showUnknownRouteDistanceFlights, setShowUnknownRouteDistanceFlights] = useState(
+    dataFilter.showUnknownRouteDistance ?? true
+  );
 
   const handleAltitudeChange = (event, newValue) => {
     setAltitudeFilter(newValue);
@@ -55,15 +76,20 @@ function FilterSliders({ dataFilter, setDataFilter, setViewBookmarked, viewBookm
   const handleSpeedChange = (event, newValue) => {
     setSpeedFilter(newValue);
   };
+  const handleRouteDistanceChange = (event, newValue) => {
+    setRouteDistanceFilter(newValue);
+  };
 
   const filterDataByNullEntry = useCallback(() => {
     setDataFilter({
       altitude: dataFilter.altitude,
       speed: dataFilter.speed,
       showNullAirlineEntry: !enableNullAirlineEntry,
+      routeDistance: dataFilter.routeDistance,
+      showUnknownRouteDistance: showUnknownRouteDistanceFlights,
     });
     setEnableNullAirlineEntry(!enableNullAirlineEntry);
-  }, [enableNullAirlineEntry, dataFilter, setDataFilter]);
+  }, [enableNullAirlineEntry, dataFilter, setDataFilter, showUnknownRouteDistanceFlights]);
 
   function altitudeValueText(value) {
     return `${value} m`;
@@ -71,20 +97,40 @@ function FilterSliders({ dataFilter, setDataFilter, setViewBookmarked, viewBookm
   function speedValueText(value) {
     return `${value} km/h`;
   }
+  function routeDistanceValueText(value) {
+    return `${value} km`;
+  }
 
   const filterDataBySpeedAltitude = useCallback(() => {
     setDataFilter({
       showNullAirlineEntry: dataFilter.showNullAirlineEntry,
       altitude: altitudeFilter,
       speed: speedFilter,
+      routeDistance: routeDistanceFilter,
+      showUnknownRouteDistance: showUnknownRouteDistanceFlights,
     });
-  }, [altitudeFilter, speedFilter, dataFilter.showNullAirlineEntry, setDataFilter]);
+  }, [
+    altitudeFilter,
+    speedFilter,
+    dataFilter.showNullAirlineEntry,
+    setDataFilter,
+    routeDistanceFilter,
+    showUnknownRouteDistanceFlights,
+  ]);
 
   const resetFilter = useCallback(() => {
     setSpeedFilter([0, 1500]);
     setAltitudeFilter([0, 15000]);
     setEnableNullAirlineEntry(true);
-    setDataFilter({ showNullAirlineEntry: true, altitude: [0, 15000], speed: [0, 1500] });
+    setRouteDistanceFilter([0, 30000]);
+    setShowUnknownRouteDistanceFlights(true);
+    setDataFilter({
+      showNullAirlineEntry: true,
+      altitude: [0, 15000],
+      speed: [0, 1500],
+      routeDistance: [0, 25000],
+      showUnknownRouteDistance: true,
+    });
   }, [setDataFilter]);
 
   const showBookmarked = useCallback(() => {
@@ -123,6 +169,41 @@ function FilterSliders({ dataFilter, setDataFilter, setViewBookmarked, viewBookm
             valueLabelDisplay={"auto"}
             valueLabelFormat={altitudeValueText}
           />
+        </div>
+      </div>
+      <div className="row justify-content-center mb-5">
+        <div className="col-lg-2 col-md-4 col-sm-4">Route Distance:</div>
+        <div className="col-lg-4 col-md-6 col-sm-12 align-bottom">
+          <Slider
+            getAriaLabel={() => "Filter with Route Distance"}
+            value={routeDistanceFilter}
+            onChange={handleRouteDistanceChange}
+            getAriaValueText={routeDistanceValueText}
+            step={100}
+            min={0}
+            max={25000}
+            valueLabelDisplay={"auto"}
+            valueLabelFormat={routeDistanceValueText}
+          />
+        </div>
+      </div>
+      <div className="row justify-content-center mb-5">
+        <div className="col-lg-4 col-md-6 col-sm-12">
+          <FormControl component="fieldset" className="text-center mx-auto">
+            <FormControlLabel
+              value="start"
+              control={
+                <Checkbox
+                  onChange={() => {
+                    setShowUnknownRouteDistanceFlights(!showUnknownRouteDistanceFlights);
+                  }}
+                />
+              }
+              checked={showUnknownRouteDistanceFlights}
+              label={"Show Flights with unknown route distance"}
+              labelPlacement="start"
+            />
+          </FormControl>
         </div>
       </div>
       <div className="row mb-5 justify-content-center">

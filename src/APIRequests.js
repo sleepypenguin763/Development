@@ -10,7 +10,7 @@ const apiRequest = async (path) => {
       "Content-Type": "application/json",
     },
   });
-  return response.json();
+  return await response.json();
 };
 
 const saveDataAsJSON = async (flights) => {
@@ -29,7 +29,7 @@ const getFlightRoutes = async (callsign) => {
   const firstThreeChar = callsign.slice(0, 3);
   const callsignWithoutSpace = callsign.replace(/ /g, "");
   const url =
-    "https://sleepypenguin763.github.io/Aviation/routes/" +
+    "https://sleepypenguin763.github.io/Flight-Routes/routes/" +
     firstThreeChar +
     "/" +
     callsignWithoutSpace +
@@ -42,7 +42,7 @@ const getFlightRoutes = async (callsign) => {
       return null;
     }
     const url2 =
-      "https://sleepypenguin763.github.io/Aviation/routes/" +
+      "https://sleepypenguin763.github.io/Flight-Routes/routes/" +
       firstTwoChar +
       "-/" +
       callsignWithoutSpace +
