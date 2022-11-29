@@ -6,7 +6,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import { useCallback, useState } from "react";
 
-const sortOptions = ["Default", "Callsign", "Speed", "Route Distance"]; //This is a constant, and will not be updated what so ever during the life cycle, so no need to use states.
+const sortOptions = ["Default", "Callsign (Alphanumerical)", "Speed (Ascending)", "Route Distance (Ascending)"]; //This is a constant, and will not be updated what so ever during the life cycle, so no need to use states.
 
 // Alphanumeric sort taken from: https://stackoverflow.com/questions/4340227/sort-mixed-alpha-numeric-array
 function AlphaNumericSort() {
@@ -47,7 +47,6 @@ function SortWithSpeed() {
     if (a[9] === b[9]) {
       return 0;
     }
-    // nulls sort after anything else
     if (a[9] === null) {
       return 1;
     }
@@ -107,9 +106,9 @@ function SortByMenu({ sortBy, setSortBy }) {
               onChange={onSortOptionChange}
             >
               <MenuItem value={sortOptions[0]}>Default</MenuItem>
-              <MenuItem value={sortOptions[1]}>Callsign</MenuItem>
-              <MenuItem value={sortOptions[2]}>Speed</MenuItem>
-              <MenuItem value={sortOptions[3]}>Route Distance</MenuItem>
+              <MenuItem value={sortOptions[1]}>Callsign (Alphanumerical)</MenuItem>
+              <MenuItem value={sortOptions[2]}>Speed (Ascending)</MenuItem>
+              <MenuItem value={sortOptions[3]}>Route Distance (Ascending)</MenuItem>
             </Select>
           </FormControl>
         </div>

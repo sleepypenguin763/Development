@@ -5,6 +5,7 @@ import Checkbox from "@mui/material/Checkbox";
 import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Slider from "@mui/material/Slider";
+import Tooltip from "@mui/material/Tooltip";
 import { useCallback, useState } from "react";
 
 const filterData = (data, filter) => {
@@ -208,9 +209,11 @@ function FilterSliders({ dataFilter, setDataFilter, setViewBookmarked, viewBookm
       </div>
       <div className="row mb-5 justify-content-center">
         <div className="col-lg-4 col-md-6 col-sm-12 mb-2">
-          <button className="btn btn-primary" onClick={filterDataBySpeedAltitude}>
-            Apply Filter(s) and Options!
-          </button>
+          <Tooltip title="Click to apply the filters assigned above, including the checkbox">
+            <button className="btn btn-primary" onClick={filterDataBySpeedAltitude}>
+              Apply Filter(s) and Options!
+            </button>
+          </Tooltip>
         </div>
         <div className="col-lg-4 col-md-6 col-sm-12 mb-2">
           <Button variant="contained" color="warning" onClick={resetFilter} startIcon={<DeleteIcon />}>
@@ -220,19 +223,31 @@ function FilterSliders({ dataFilter, setDataFilter, setViewBookmarked, viewBookm
       </div>
       <div className="row mb-5 justify-content-center">
         <div className="col-lg-4 col-md-6 col-sm-12 mb-2">
-          <Button
-            variant="contained"
-            color="warning"
-            onClick={filterDataByNullEntry}
-            startIcon={enableNullAirlineEntry ? <VisibilityOff /> : <Visibility />}
+          <Tooltip
+            title={
+              enableNullAirlineEntry
+                ? "Click to hide flights with unrecognized operator and/or with unkown callsign"
+                : "Click to also show unrecognized flights"
+            }
           >
-            {enableNullAirlineEntry ? "Remove unrecognized flights" : "Show unrecognized flights"}
-          </Button>
+            <Button
+              variant="contained"
+              color="warning"
+              onClick={filterDataByNullEntry}
+              startIcon={enableNullAirlineEntry ? <VisibilityOff /> : <Visibility />}
+            >
+              {enableNullAirlineEntry ? "Remove unrecognized flights" : "Show unrecognized flights"}
+            </Button>
+          </Tooltip>
         </div>
         <div className="col-lg-4 col-md-6 col-sm-12 mb-2">
-          <Button variant="contained" color="secondary" onClick={showBookmarked} startIcon={<BookmarkBorder />}>
-            {viewBookmarked ? "Hide Bookmarked Flights" : "View Bookmarked Flights"}
-          </Button>
+          <Tooltip
+            title={viewBookmarked ? "Click to show all flights" : "Click to just view the content in your bookmark"}
+          >
+            <Button variant="contained" color="secondary" onClick={showBookmarked} startIcon={<BookmarkBorder />}>
+              {viewBookmarked ? "Show All Flights" : "View Bookmarked Flights"}
+            </Button>
+          </Tooltip>
         </div>
       </div>
     </div>
