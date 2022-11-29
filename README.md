@@ -8,7 +8,7 @@ https://sleepypenguin763.github.io/Development/
 
 > **Note**
 > 
-> Initially, the application will load predefined data, which only consists of ~1000 data points. This is to reduce the time for you when grading the assignment. If you want to load the page with LIVE data, please click on the orange button on the loading screen / main screen. (It is more cool to see this since you can search the flight with callsign on Google, and you'll see that the data mostly matches with what is being displayed on my screen)
+> Initially, the application will load predefined data, which only consists of ~1000 data points. This is to reduce the time for you when grading the assignment. The content of this data will most likely be outdated, since the data is taken from past flights. If you want to load the page with LIVE data, please click on the orange button on the loading screen / main screen. (It is more cool to see this since you can search the flight with callsign on Google, and you'll see that the data mostly matches with what is being displayed on my screen)
 
 ### API
 [Here](https://github.com/sleepypenguin763/Airlines) is where the mock REST API regarding the airline, aircraft, airports, and country lives. Please read the README in side this repo to see how the Mock REST API is organized.
@@ -51,7 +51,7 @@ Aggregation system is implemented via "bookmark" feature. User can click on the 
 
 
 ### Note About the Data Provided
-Due to the larger volume of data being loaded, it is possible that sometimes it fails to load few data points and will show "Airline not found" even when the logo is present. However, this is rare, and it is also possible that the route of the flight is not plotted on the dataset I am using to map each callsigns to airline/routes. Also, the data presented on this website can be delayed by few minuites and might not be completely accurate. 
+Due to the larger volume of data being loaded, it is possible that sometimes it fails to load few data points and will show "Airline not found" even when the logo is present. However, this is rare, and it is also possible that the route of the flight is not plotted on the dataset I am using to map each callsigns to airline/routes. Also, the data presented on this website can be delayed by few minuites and might not be completely accurate. Lastly, it is possible that the dataset I am using to map the callsign to route is inaccurate (i.e. if the flights only operate on given route on specific day of the week, the data shown on the website might be completely wrong)
 
 ### Note About Filters
 The definition of undefined airplane could either mean that the flight has missing callsign or that the flight's operator can not be identified (such as the private jets).
