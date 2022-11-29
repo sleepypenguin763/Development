@@ -23,7 +23,7 @@ Now, there is a checkbox stating 'Show Flights with unknown route distance'. You
 
 > **Note**
 > 
-> Unrecognized flights are defined as the following: a) if a flight has unknown callsign OR b) flight's operator is unknown. This filter will remove all private jets and ground vehicle(such as towing car) basically.
+> Unrecognized flights are defined as the following: a) if a flight has unknown callsign OR b) flight's operator is unknown. This filter will basically remove all private jets and ground vehicle(such as towing car).
 
 ### Organization of Components
 Each component consists of the following:
