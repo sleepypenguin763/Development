@@ -1,19 +1,21 @@
 import BookmarkIcon from "@mui/icons-material/Bookmark";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
+import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
 import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Typography from "@mui/material/Typography";
 import { useCallback, useEffect, useState } from "react";
-import { apiRequest, getAirlineData, getAirportData, getFlightRoutes, saveDataAsJSON } from "./APIRequests.js";
+import { apiRequest, getAirlineData, getAirportData, getFlightRoutes } from "./APIRequests.js";
 import "./App.css";
-import jsonFlightData from "./assets/data.json";
+import jsonFlightData from "./assets/predefinedData.json";
 import { aggregataTotalDistance, calculateRouteDistance } from "./Distance.js";
 import { filterData, FilterSliders } from "./Filter.js";
 import { SetupProgressBar } from "./ProgressBar.js";
 import { SortByMenu, sortData } from "./Sort.js";
 
 const importAllLogos = (r) => {
+  //Way to import 100s of images without writing import statements
   let images = {};
   r.keys().map((item, _) => {
     images[item.replace("./", "")] = r(item);
@@ -37,7 +39,7 @@ function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark, log
     [bookmark, setBookmark]
   );
 
-  const dataSection =  dataToRender.map((flight, index) => {
+  const dataSection = dataToRender.map((flight, index) => {
     const callsign = flight[1];
     const flightData = flight["callsign"] === null ? null : flight["callsign"];
     let route = null;
@@ -104,7 +106,7 @@ function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark, log
             }
             label={
               <Typography variant="h4">
-                <img style={{ maxWidth: "50px", marginRight: "10px" }} src={logos[logoPath]}/>
+                <img style={{ maxWidth: "50px", marginRight: "10px" }} src={logos[logoPath]} />
                 {invalidCallsign ? "Callsign Undefined" : callsign}
               </Typography>
             }
@@ -132,14 +134,12 @@ function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark, log
   });
   return (
     <div className="container">
-      <div className="row">
-        {dataSection}
-      </div>
+      <div className="row">{dataSection}</div>
     </div>
   );
 }
 
-function ShowAggregatedContent({totalDistance}){
+function ShowAggregatedContent({ totalDistance }) {
   const knownDistance = totalDistance[0].toFixed(3);
   const unknownRouteTotal = totalDistance[1];
   return (
@@ -159,7 +159,7 @@ function ViewBookmarked({ data, bookmark, filter, sortBy, setBookmark, logos }) 
   const totalRouteDistance = aggregataTotalDistance(dataToRender);
   return (
     <div>
-      <ShowAggregatedContent totalDistance={totalRouteDistance}/>
+      <ShowAggregatedContent totalDistance={totalRouteDistance} />
       <CurrentAirplenStatus
         data={dataToRender}
         filter={filter}
@@ -196,7 +196,7 @@ function App() {
 
   const [viewBookmarked, setViewBookmarked] = useState(false);
 
-  const loadUsingJSON = false;
+  const [loadUsingJSON, setLoadUsingJSON] = useState(true);
 
   const batchLoadingItemNum = 500;
 
@@ -204,6 +204,7 @@ function App() {
     const getFlightsFromJSON = jsonFlightData;
     loadUsingJSON && setDataSize(getFlightsFromJSON.states.length);
     const loadInit = async (data) => {
+      setLoadComplete(false);
       !loadUsingJSON && setDataSize(data.states.length);
 
       const flightStates = loadUsingJSON ? getFlightsFromJSON.states : data.states;
@@ -219,6 +220,7 @@ function App() {
       });
       await Promise.all(tmp).then((out) => {
         setLoadStartIndex(batchLoadingItemNum);
+        setbatchLoadingIndex(0);
         setLoadingProgress(batchLoadingItemNum);
         setFlights(calculateRouteDistance(out, 0, batchLoadingItemNum));
       });
@@ -227,16 +229,18 @@ function App() {
     const getFlightsFromAPI = async () => {
       await apiRequest().then((out) => {
         setFlights(out);
+        // the output data gets passed into loadInit. This is to prevent the case when the set flight does not get completed on time.
+        // This could happen especially since the data we handle it extremely large.
         loadInit(out);
       });
     };
 
-    if (loadUsingJSON){
+    if (loadUsingJSON) {
       loadInit(null);
-    }else {
+    } else {
       getFlightsFromAPI();
     }
-  }, []);
+  }, [loadUsingJSON]);
 
   /*
     Manual Batch Loading in order for Chrome to not raise "net::ERR_INSUFFICIENT_RESOURCES"
@@ -276,9 +280,13 @@ function App() {
     setbatchLoadingIndex(1);
   }
 
+  const changeLoadingMode = useCallback(() => {
+    setLoadUsingJSON(!loadUsingJSON);
+  }, [loadUsingJSON]);
+
   return (
     <div className="App">
-      <h1 className="mb-5">Live Flight Detail Viewer</h1>
+      <h1 className="mb-5">{loadUsingJSON ? "Predefined Flight Detail Viewer" : "Live Flight Detail Viewer"}</h1>
       {(100 * loadingProgress) / dataSize < 99.5 && <SetupProgressBar value={(100 * loadingProgress) / dataSize} />}
 
       {loadComplete && (
@@ -314,8 +322,13 @@ function App() {
           />
         )
       )}
-
-      <button onClick={() => saveDataAsJSON(flights)}> Save RealTime JSON Data </button>
+      {
+        <Button variant="contained" color="warning" onClick={changeLoadingMode} className="mb-5">
+          {loadUsingJSON
+            ? "Load Using Live Data"
+            : "Load predefined data (please select this when you can not load the page)"}
+        </Button>
+      }
     </div>
   );
 }

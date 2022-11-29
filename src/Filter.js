@@ -209,7 +209,7 @@ function FilterSliders({ dataFilter, setDataFilter, setViewBookmarked, viewBookm
       <div className="row mb-5 justify-content-center">
         <div className="col-lg-4 col-md-6 col-sm-12 mb-2">
           <button className="btn btn-primary" onClick={filterDataBySpeedAltitude}>
-            Filter!
+            Apply Filter(s) and Options!
           </button>
         </div>
         <div className="col-lg-4 col-md-6 col-sm-12 mb-2">
