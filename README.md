@@ -51,7 +51,12 @@ Aggregation system is implemented via "bookmark" feature. User can click on the 
 
 
 ### Note About the Data Provided
-Due to the larger volume of data being loaded, it is possible that sometimes it fails to load few data points and will show "Airline not found" even when the logo is present. However, this is rare, and it is also possible that the route of the flight is not plotted on the dataset I am using to map each callsigns to airline/routes. Also, the data presented on this website can be delayed by few minuites and might not be completely accurate. Lastly, it is possible that the dataset I am using to map the callsign to route is inaccurate (i.e. if the flights only operate on given route on specific day of the week, the data shown on the website might be completely wrong)
+Due to the larger volume of data being loaded, it is possible that sometimes it fails to load few data points and will show "Airline not found" even when the logo is present. However, this is rare, and it is also possible that the route of the flight is not plotted on the dataset I am using to map each callsigns to airline/routes. Also, the data presented on this website can be delayed by few minuites and might not be completely accurate. Lastly, it is possible that the dataset I am using to map the callsign to route is inaccurate (i.e. if the flights only operate on given route on specific day of the week, the data shown on the website might be completely wrong).
+
+> **Warning**
+> 
+> It seems to be that the routes in the U.S. are especially inaccurate. Please keep that in mind when utilizing this tool
+
 
 ### Note About Filters
 The definition of undefined airplane could either mean that the flight has missing callsign or that the flight's operator can not be identified (such as the private jets).
