@@ -4,6 +4,7 @@ import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
 import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { useCallback, useEffect, useState } from "react";
 import { apiRequest, getAirlineData, getAirportData, getFlightRoutes } from "./APIRequests.js";
@@ -90,19 +91,21 @@ function CurrentAirplenStatus({ data, filter, sortBy, bookmark, setBookmark, log
           <FormControlLabel
             value="start"
             control={
-              <Checkbox
-                icon={<BookmarkBorderIcon />}
-                checkedIcon={<BookmarkIcon />}
-                onChange={() => {
-                  onSetBookMark(flightID);
-                }}
-                checked={bookmark && flightID in bookmark && bookmark[flightID] === true ? true : false}
-                sx={{
-                  "& .MuiSvgIcon-root": {
-                    fontSize: "2rem",
-                  },
-                }}
-              />
+              <Tooltip title="Click to add / remove to bookmark" placement="top">
+                <Checkbox
+                  icon={<BookmarkBorderIcon />}
+                  checkedIcon={<BookmarkIcon />}
+                  onChange={() => {
+                    onSetBookMark(flightID);
+                  }}
+                  checked={bookmark && flightID in bookmark && bookmark[flightID] === true ? true : false}
+                  sx={{
+                    "& .MuiSvgIcon-root": {
+                      fontSize: "2rem",
+                    },
+                  }}
+                />
+              </Tooltip>
             }
             label={
               <Typography variant="h4">
@@ -204,7 +207,18 @@ function App() {
     const getFlightsFromJSON = jsonFlightData;
     loadUsingJSON && setDataSize(getFlightsFromJSON.states.length);
     const loadInit = async (data) => {
+      //Initialize/reset the state to take care of the case when the user decides to change between live and static data
       setLoadComplete(false);
+      setBookmark({});
+      setSortBy("Default");
+      setDataFilter({
+        showNullAirlineEntry: true,
+        altitude: [5000, 7000],
+        speed: [300, 500],
+        routeDistance: [0, 25000],
+        showUnknownRouteDistance: true,
+      });
+
       !loadUsingJSON && setDataSize(data.states.length);
 
       const flightStates = loadUsingJSON ? getFlightsFromJSON.states : data.states;
