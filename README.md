@@ -8,7 +8,7 @@ https://sleepypenguin763.github.io/Development/
 
 > **Note**
 > 
-> Initially, the application will load predefined data, which only consists of ~1000 data points. This is to reduce the time for you when grading the assignment. If you want to load the page with LIVE data, please click on the orange button on the loading screen / main screen.
+> Initially, the application will load predefined data, which only consists of ~1000 data points. This is to reduce the time for you when grading the assignment. If you want to load the page with LIVE data, please click on the orange button on the loading screen / main screen. (It is more cool to see this since you can search the flight with callsign on Google, and you'll see that the data mostly matches with what is being displayed on my screen)
 
 ### API
 [Here](https://github.com/sleepypenguin763/Airlines) is where the mock REST API regarding the airline, aircraft, airports, and country lives. Please read the README in side this repo to see how the Mock REST API is organized.
@@ -18,6 +18,12 @@ The goal of this application is to see the LIVE information regarding the airpla
 
 ### Usability Principles Considered
 This is something that needs more improvement, especially since it is taking roughly 30seconds to initially load the page. However, this is hard to solve since the assignment requires everything to be on one page, so I was not able to implement pagination. However, the website is mostly user friendly in a sense that it is implemented using responsive designing principles.
+
+Now, there is a checkbox stating 'Show Flights with unknown route distance'. You might be confused about the difference between this and 'Hide unrecognized flights'. These are TWO DIFFERENT BUTTONS. Flights with valid/invalid callsign can have undefined routes, and this is independent of callsign/airline being recognizable. For instance, it is possible that we have some flight XXX where we know the operator of the aircraft but we do not know where the origin/destination is. In this case, we can not determine the route distance, and by unchecking the checkbox saying 'Show Flights with unknown route distance', it will remove from the list.
+
+> **Note**
+> 
+> Unrecognized flights are defined as the following: a) if a flight has unknown callsign OR b) flight's operator is unknown. This filter will remove all private jets and ground vehicle(such as towing car) basically.
 
 ### Organization of Components
 Each component consists of the following:
