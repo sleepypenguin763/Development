@@ -8,7 +8,7 @@ https://sleepypenguin763.github.io/Development/
 
 > **Note**
 > 
-> Initially, the application will load predefined data, which only consists of ~1000 data points. This is to reduce the time for you when grading the assignment. If you want to load the page with LIVE data, please click on the orange button on the loading screen / main screen. (It is more cool to see this since you can search the flight with callsign on Google, and you'll see that the data mostly matches with what is being displayed on my screen)
+> Initially, the application will load predefined data, which only consists of ~1000 data points. This is to reduce the time for you when grading the assignment. The content of this data will most likely be outdated, since the data is taken from past flights. If you want to load the page with LIVE data, please click on the orange button on the loading screen / main screen. (It is more cool to see this since you can search the flight with callsign on Google, and you'll see that the data mostly matches with what is being displayed on my screen)
 
 ### API
 [Here](https://github.com/sleepypenguin763/Airlines) is where the mock REST API regarding the airline, aircraft, airports, and country lives. Please read the README in side this repo to see how the Mock REST API is organized.
